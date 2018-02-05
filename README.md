@@ -22,5 +22,9 @@ stack build --pedantic
 
 ## Running Tests
 ```bash
-stack test
+stack test --pedantic
+```
+
+```bash
+stack test --file-watch --pedantic
 ```

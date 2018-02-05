@@ -1,9 +1,14 @@
 module NeuralNet.NeuralNet (
-  NeuralNetDefinition,
+  LayerDefinition (LayerDefinition),
   NeuralNet,
-  buildNet
+  NeuronLayer (NeuronLayer),
+  buildNet,
+  nnLayers,
+  layerW,
+  layerActivation
 ) where
 
+import Data.Matrix
 import NeuralNet.Activation
 
 type NumNeurons = Int
@@ -11,17 +16,30 @@ type NumNeurons = Int
 data LayerDefinition = LayerDefinition Activation NumNeurons
   deriving (Show, Eq)
 
-data NeuralNetDefinition = NeuralNetDefinition [LayerDefinition]
+data NeuronLayer = NeuronLayer Activation (Matrix Double) Double
   deriving (Show, Eq)
 
-data NeuronLayer = NeuronLayer Activation Double
-
 data NeuralNet = NeuralNet [NeuronLayer]
+  deriving (Show, Eq)
 
+type NumInputs = Int
+-- W = layer x
+buildNet :: NumInputs -> [LayerDefinition] -> NeuralNet
+buildNet _ [] = error "No layer definitions provided"
+buildNet numInputs layerDefs
+  | numInputs > 0 = NeuralNet (buildNeuronLayers numInputs layerDefs)
+  | otherwise     = error "Need positive num inputs"
 
-buildNet :: NeuralNetDefinition -> NeuralNet
-buildNet (NeuralNetDefinition layerDefs) = NeuralNet (buildNeuronLayers layerDefs)
+buildNeuronLayers :: Int -> [LayerDefinition] -> [NeuronLayer]
+buildNeuronLayers _ [] = []
+buildNeuronLayers numInputs (LayerDefinition a numNeurons:ds) = (NeuronLayer a w 0) : buildNeuronLayers numNeurons ds
+  where w = zero numInputs numNeurons
 
-buildNeuronLayers :: [LayerDefinition] -> [NeuronLayer]
-buildNeuronLayers [] = []
-buildNeuronLayers (LayerDefinition a _:ds) = (NeuronLayer a 0) : buildNeuronLayers ds
+nnLayers :: NeuralNet -> [NeuronLayer]
+nnLayers (NeuralNet layers) = layers
+
+layerW :: NeuronLayer -> Matrix Double
+layerW (NeuronLayer _ w _) = w
+
+layerActivation :: NeuronLayer -> Activation
+layerActivation (NeuronLayer a _ _) = a
