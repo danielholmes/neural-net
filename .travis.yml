@@ -1,0 +1,16 @@
+sudo: required
+
+language: generic
+
+services:
+  - docker
+
+cache:
+  directories:
+    - $HOME/.stack
+
+before_install:
+  - docker pull ubuntu:16.04
+
+install:
+  - docker build .
