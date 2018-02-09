@@ -73,13 +73,5 @@ buildLayersFromList numInputs ((LayerDefinition a numNeurons):ds) xs = layer : (
 nnLayers :: NeuralNet -> [NeuronLayer]
 nnLayers (NeuralNet layers) = layers
 
-nnNumInputs :: NeuralNet -> Int
-nnNumInputs = numLayerInputs . head . nnLayers
-
-nnForward :: NeuralNet -> [Double] -> [Double]
-nnForward nn inputs
-  | expectedInputs /= givenInputs = error ("Input size " ++ show givenInputs ++ " isn't expected " ++ show expectedInputs)
-  | otherwise                     = foldr layerForward inputs (nnLayers nn)
-    where
-      expectedInputs = nnNumInputs nn
-      givenInputs = length inputs
+nnForward :: NeuralNet -> [Double] -> [[Double]]
+nnForward nn inputs = tail (reverse (foldl (\i l -> layerForward l (head i) : i) [inputs] (nnLayers nn)))

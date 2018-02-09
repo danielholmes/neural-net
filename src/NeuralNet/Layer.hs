@@ -4,7 +4,7 @@ module NeuralNet.Layer (
   layerB,
   layerActivation,
   layerForward,
-  numLayerInputs
+  layerNumInputs
 ) where
 
 import qualified NeuralNet.Activation as Activation
@@ -15,19 +15,23 @@ data NeuronLayer = NeuronLayer Activation.Activation (Matrix Double) [Double]
   deriving (Show, Eq)
 
 layerForward :: NeuronLayer -> [Double] -> [Double]
-layerForward l x = Vector.toList (getCol 1 a)
-  where
-    xMatrix = colVector (Vector.fromList x)
-    wt = transpose (layerW l)
-    b = colVector (Vector.fromList (layerB l))
-    z = wt * xMatrix + b
-    a = Activation.forward (layerActivation l) z
+layerForward l x
+  | expInputs /= xLen = error ("Layer " ++ show l ++ " expected " ++ show expInputs ++ " inputs but got " ++ show xLen)
+  | otherwise         = Vector.toList (getCol 1 a)
+    where
+      expInputs = layerNumInputs l
+      xLen = length x
+      xMatrix = colVector (Vector.fromList x)
+      wt = transpose (layerW l)
+      b = colVector (Vector.fromList (layerB l))
+      z = wt * xMatrix + b
+      a = Activation.forward (layerActivation l) z
 
 layerW :: NeuronLayer -> Matrix Double
 layerW (NeuronLayer _ w _) = w
 
-numLayerInputs :: NeuronLayer -> Int
-numLayerInputs = nrows . layerW
+layerNumInputs :: NeuronLayer -> Int
+layerNumInputs = nrows . layerW
 
 layerB :: NeuronLayer -> [Double]
 layerB (NeuronLayer _ _ b) = b
