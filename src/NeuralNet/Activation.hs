@@ -3,13 +3,16 @@ module NeuralNet.Activation (
   forward
 ) where
 
+import Data.Matrix
+import NeuralNet.Matrix
+
 data Activation = Sigmoid | Tanh | ReLU
   deriving (Eq, Show)
 
-e :: Double
-e = exp 1
+--e :: Double
+--e = exp 1
 
-forward :: Activation -> Double -> Double
-forward Sigmoid x = 1 / (1 + (e ** (-x)))
+forward :: Activation -> Matrix Double -> Matrix Double
+forward Sigmoid _ = error "Hello" --  1 / (1 + (e ** (-x)))
 forward Tanh _ = error "TODO"
-forward ReLU _ = error "TODO"
+forward ReLU m = mapMatrix (max 0) m

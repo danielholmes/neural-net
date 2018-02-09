@@ -1,28 +1,22 @@
-module NeuralNet.NeuralNet (
+module NeuralNet.Net (
   LayerDefinition (LayerDefinition),
   NeuralNet,
-  NeuronLayer (NeuronLayer),
   initNN,
   buildNNFromList,
   nnLayers,
-  nnForward,
-  layerW,
-  layerB,
-  layerActivation
+  nnForward
 ) where
 
 import System.Random
 import Data.Matrix
 import NeuralNet.Activation
+import NeuralNet.Layer
 
 type NumNeurons = Int
 
 type NeuralNetDefinition = (NumInputs, [LayerDefinition])
 
 data LayerDefinition = LayerDefinition Activation NumNeurons
-  deriving (Show, Eq)
-
-data NeuronLayer = NeuronLayer Activation (Matrix Double) Double
   deriving (Show, Eq)
 
 data NeuralNet = NeuralNet [NeuronLayer]
@@ -38,7 +32,7 @@ initNN g (numInputs, layerDefs)
 
 initNeuronLayers :: StdGen -> Int -> [LayerDefinition] -> ([NeuronLayer], StdGen)
 initNeuronLayers g _ [] = ([], g)
-initNeuronLayers g numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer a w 0 : ls, newG2)
+initNeuronLayers g numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer a w (replicate numNeurons 0) : ls, newG2)
   where
     foldStep :: Int -> ([Double], StdGen) -> ([Double], StdGen)
     foldStep _ (accu, foldG) = (d:accu, newFoldG)
@@ -58,6 +52,8 @@ buildNNFromList def@(numInputs, layerDefs) list
       defSize = definitionToNNSize def
       listSize = length list
 
+-- TODO: nnToList and include back and forward of buildNNFromList to ensure works
+
 definitionToNNSize :: NeuralNetDefinition -> Int
 definitionToNNSize (numInputs, layerDefs) = defToSizeStep numInputs layerDefs
   where
@@ -70,20 +66,20 @@ buildLayersFromList _ [] _ = []
 buildLayersFromList numInputs ((LayerDefinition a numNeurons):ds) xs = layer : (buildLayersFromList numNeurons ds restXs)
   where
     size = numInputs * numNeurons
-    (layerXs, b:restXs) = splitAt size xs
-    layer = NeuronLayer a (fromList numInputs numNeurons layerXs) b
+    (layerXs, afterLayerXs) = splitAt size xs
+    (bs, restXs) = splitAt numNeurons afterLayerXs
+    layer = NeuronLayer a (fromList numInputs numNeurons layerXs) bs
 
 nnLayers :: NeuralNet -> [NeuronLayer]
 nnLayers (NeuralNet layers) = layers
 
+nnNumInputs :: NeuralNet -> Int
+nnNumInputs = numLayerInputs . head . nnLayers
+
 nnForward :: NeuralNet -> [Double] -> [Double]
-nnForward _ inputs = inputs
-
-layerW :: NeuronLayer -> Matrix Double
-layerW (NeuronLayer _ w _) = w
-
-layerB :: NeuronLayer -> Double
-layerB (NeuronLayer _ _ b) = b
-
-layerActivation :: NeuronLayer -> Activation
-layerActivation (NeuronLayer a _ _) = a
+nnForward nn inputs
+  | expectedInputs /= givenInputs = error ("Input size " ++ show givenInputs ++ " isn't expected " ++ show expectedInputs)
+  | otherwise                     = []
+    where
+      expectedInputs = nnNumInputs nn
+      givenInputs = length inputs
