@@ -57,5 +57,5 @@ main = do
           layerW (layers!!0) `shouldBe` fromList 5 1 [1, 2, 3, 4, 5]
           layerB (layers!!0) `shouldBe` 6
 
-      it "returns Unknown for no timestamp" $
-        False `shouldBe` False
+      it "throw error for incorrect list size" $
+        evaluate (buildNNFromList (5, [LayerDefinition ReLU 1]) [1, 2]) `shouldThrow` anyException

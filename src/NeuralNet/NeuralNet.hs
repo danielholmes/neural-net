@@ -43,6 +43,7 @@ initNeuronLayers g numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer 
     foldStep :: Int -> ([Double], StdGen) -> ([Double], StdGen)
     foldStep _ (accu, foldG) = (d:accu, newFoldG)
       where (d, newFoldG) = randomR (0.0, 1.0) foldG
+    -- TODO: Look into replicateM instead of this
 
     seeds = [1..(numInputs * numNeurons)]
     (nums, newG) = foldr foldStep ([], g) seeds
@@ -50,7 +51,19 @@ initNeuronLayers g numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer 
     (ls, newG2) = initNeuronLayers newG numNeurons ds
 
 buildNNFromList :: NeuralNetDefinition -> [Double] -> NeuralNet
-buildNNFromList (numInputs, layerDefs) list = NeuralNet (buildLayersFromList numInputs layerDefs list)
+buildNNFromList def@(numInputs, layerDefs) list
+  | listSize /= defSize = error ("Wrong list size. Expected " ++ show defSize ++ " got " ++ show listSize)
+  | otherwise           = NeuralNet (buildLayersFromList numInputs layerDefs list)
+    where
+      defSize = definitionToNNSize def
+      listSize = length list
+
+definitionToNNSize :: NeuralNetDefinition -> Int
+definitionToNNSize (numInputs, layerDefs) = defToSizeStep numInputs layerDefs
+  where
+    defToSizeStep :: Int -> [LayerDefinition] -> Int
+    defToSizeStep _ [] = 0
+    defToSizeStep stepInputs ((LayerDefinition _ numNeurons):ds) = (stepInputs * numNeurons) + numNeurons + defToSizeStep numNeurons ds
 
 buildLayersFromList :: Int -> [LayerDefinition] -> [Double] -> [NeuronLayer]
 buildLayersFromList _ [] _ = []
