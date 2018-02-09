@@ -79,7 +79,7 @@ nnNumInputs = numLayerInputs . head . nnLayers
 nnForward :: NeuralNet -> [Double] -> [Double]
 nnForward nn inputs
   | expectedInputs /= givenInputs = error ("Input size " ++ show givenInputs ++ " isn't expected " ++ show expectedInputs)
-  | otherwise                     = []
+  | otherwise                     = foldr layerForward inputs (nnLayers nn)
     where
       expectedInputs = nnNumInputs nn
       givenInputs = length inputs

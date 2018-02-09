@@ -15,13 +15,13 @@ data NeuronLayer = NeuronLayer Activation.Activation (Matrix Double) [Double]
   deriving (Show, Eq)
 
 layerForward :: NeuronLayer -> [Double] -> [Double]
-layerForward l x = Vector.toList (getCol 1 wtxb) -- error "TODO" --Activation.forward (layerActivation l) z
+layerForward l x = Vector.toList (getCol 1 a)
   where
     xMatrix = colVector (Vector.fromList x)
     wt = transpose (layerW l)
     b = colVector (Vector.fromList (layerB l))
-    wtxb = wt * xMatrix + b
-    --z = multStd2 () * () -- + (layerB l)
+    z = wt * xMatrix + b
+    a = Activation.forward (layerActivation l) z
 
 layerW :: NeuronLayer -> Matrix Double
 layerW (NeuronLayer _ w _) = w

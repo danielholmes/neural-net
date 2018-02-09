@@ -9,10 +9,10 @@ import NeuralNet.Matrix
 data Activation = Sigmoid | Tanh | ReLU
   deriving (Eq, Show)
 
---e :: Double
---e = exp 1
+e :: Double
+e = exp 1
 
 forward :: Activation -> Matrix Double -> Matrix Double
-forward Sigmoid _ = error "Hello" --  1 / (1 + (e ** (-x)))
-forward Tanh _ = error "TODO"
-forward ReLU m = mapMatrix (max 0) m
+forward Sigmoid = mapMatrix (\x -> 1 / (1 + (e ** (-x))))
+forward Tanh = mapMatrix (\x -> ((e ** x) - (e ** (-x))) / (e ** x + e ** (-x)))
+forward ReLU = mapMatrix (max 0)

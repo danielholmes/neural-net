@@ -78,4 +78,4 @@ netSpec g = do
 
     it "calculates correctly for logreg" $
       let nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
-      in (nnForward nn [1, 1, 2]) `shouldBe` [1.0]
+      in (nnForward nn [1, 1, 2]) `shouldBe` [13.0]
