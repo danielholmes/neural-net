@@ -5,6 +5,7 @@ import Data.Matrix
 import NeuralNet.Net
 import NeuralNet.Activation
 import NeuralNet.Layer
+import NeuralNet.Example
 import Control.Exception (evaluate)
 import Data.List
 import System.Random
@@ -83,8 +84,22 @@ netSpec g =
       it "throw error for incorrect list size" $
         evaluate (buildNNFromList (5, [LayerDefinition ReLU 1]) [1, 2]) `shouldThrow` anyException
 
+
+    describe "isExampleSetCompatibleWithNN" $ do
+      it "calculates correctly for compatible" $
+        let
+          nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
+          examples = createExampleSet [([1, 2, 3], 0), ([4, 5, 6], 1)]
+        in isExampleSetCompatibleWithNN examples nn `shouldBe` True
+
+      it "calculates correctly for incompatible" $
+        let
+          nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
+          examples = createExampleSet [([1, 2], 0), ([4, 5], 1)]
+        in isExampleSetCompatibleWithNN examples nn `shouldBe` False
+
     describe "nnForward" $ do
-      -- Not owkring, can't figure out why. When change to shouldBe [] it does throw an error
+      -- Not working, can't figure out why. When change to shouldBe [] it does throw an error
 --      it "throws errors when incorrect num inputs provided" $
 --        let nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
 --        in evaluate (nnForward nn [1, 1]) `shouldThrow` anyErrorCall
@@ -105,3 +120,10 @@ netSpec g =
           nn = buildNNFromList def nums
         in
           nnForward nn [1, 1, 1] `shouldBe` [[0.5, 0.5], [2.5]]
+
+    describe "nnForwardSet" $ do
+      it "calculates correctly for logreg" $
+        let
+          nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
+          examples = createExampleSet [([1, 1, 2], 0)]
+        in nnForwardSet nn examples `shouldBe` [matrix 1 1 (const 13.0)]

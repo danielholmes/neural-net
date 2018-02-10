@@ -3,29 +3,38 @@ module NeuralNet.Layer (
   layerW,
   layerB,
   layerActivation,
+  layerNumInputs,
   layerForward,
-  layerNumInputs
+  layerForwardSet
 ) where
 
-import qualified NeuralNet.Activation as Activation
+import NeuralNet.Activation
+import NeuralNet.Example
 import Data.Matrix
 import qualified Data.Vector as Vector
 
-data NeuronLayer = NeuronLayer Activation.Activation (Matrix Double) [Double]
+data NeuronLayer = NeuronLayer Activation (Matrix Double) [Double]
   deriving (Show, Eq)
 
 layerForward :: NeuronLayer -> [Double] -> [Double]
-layerForward l x
-  | expInputs /= xLen = error ("Layer " ++ show l ++ " expected " ++ show expInputs ++ " inputs but got " ++ show xLen)
-  | otherwise         = Vector.toList (getCol 1 a)
+layerForward l x = Vector.toList (getCol 1 rawResult)
+  where
+    examples = createExampleSet [(x, error "Undefined")]
+    rawResult = layerForwardSet l examples
+
+
+layerForwardSet :: NeuronLayer -> ExampleSet -> Matrix Double
+layerForwardSet l examples
+  | expInputs /= n = error ("Layer " ++ show l ++ " expected " ++ show expInputs ++ " inputs but got " ++ show n)
+  | otherwise      = a
     where
       expInputs = layerNumInputs l
-      xLen = length x
-      xMatrix = colVector (Vector.fromList x)
+      n = exampleSetN examples
+      x = exampleSetX examples
       wt = transpose (layerW l)
       b = colVector (Vector.fromList (layerB l))
-      z = wt * xMatrix + b
-      a = Activation.forward (layerActivation l) z
+      z = wt * x + b
+      a = forward (layerActivation l) z
 
 layerW :: NeuronLayer -> Matrix Double
 layerW (NeuronLayer _ w _) = w
@@ -36,5 +45,5 @@ layerNumInputs = nrows . layerW
 layerB :: NeuronLayer -> [Double]
 layerB (NeuronLayer _ _ b) = b
 
-layerActivation :: NeuronLayer -> Activation.Activation
+layerActivation :: NeuronLayer -> Activation
 layerActivation (NeuronLayer a _ _) = a

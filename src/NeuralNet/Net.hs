@@ -4,13 +4,18 @@ module NeuralNet.Net (
   initNN,
   buildNNFromList,
   nnLayers,
-  nnForward
+  nnNumInputs,
+  nnForward,
+  nnForwardSet,
+  isExampleSetCompatibleWithNN
 ) where
 
 import System.Random
 import Data.Matrix
+import qualified Data.Vector as Vector
 import NeuralNet.Activation
 import NeuralNet.Layer
+import NeuralNet.Example
 
 type NumNeurons = Int
 
@@ -74,4 +79,21 @@ nnLayers :: NeuralNet -> [NeuronLayer]
 nnLayers (NeuralNet layers) = layers
 
 nnForward :: NeuralNet -> [Double] -> [[Double]]
-nnForward nn inputs = tail (reverse (foldl (\i l -> layerForward l (head i) : i) [inputs] (nnLayers nn)))
+nnForward nn inputs = map toList setResult
+  where
+    set = createExampleSet [(inputs, error "Undefined")]
+    setResult = nnForwardSet nn set
+
+nnForwardSet :: NeuralNet -> ExampleSet -> [Matrix Double]
+nnForwardSet nn examples = map (\l -> fromList (length l) 1 l) orderedResult
+  where
+    x = exampleSetX examples
+    inputs = Vector.toList (getCol 1 x)
+    foldResult = foldl (\i l -> layerForward l (head i) : i) [inputs] (nnLayers nn)
+    orderedResult = tail (reverse foldResult)
+
+nnNumInputs :: NeuralNet -> Int
+nnNumInputs = layerNumInputs . head . nnLayers
+
+isExampleSetCompatibleWithNN :: ExampleSet -> NeuralNet -> Bool
+isExampleSetCompatibleWithNN examples nn = nnNumInputs nn == exampleSetN examples
