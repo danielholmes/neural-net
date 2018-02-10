@@ -42,8 +42,15 @@ layerSpec =
         let
           nn = buildNNFromList (3, [LayerDefinition ReLU 2]) [1, 4, 2, 5, 3, 6, 7, 8]
           firstLayer = head (nnLayers nn)
-          examples = createExampleSet [([1, 1, 2], 0)]
+          examples = exampleSetX (createExampleSet [([1, 1, 2], 0)])
         in (layerForwardSet firstLayer examples) `shouldBe` fromList 2 1 [16.0, 29.0]
+
+      it "calculates correctly for multiple examples, multiple output" $
+        let
+          nn = buildNNFromList (3, [LayerDefinition ReLU 2]) [1, 4, 2, 5, 3, 6, 7, 8]
+          firstLayer = head (nnLayers nn)
+          examples = exampleSetX (createExampleSet [([1, 1, 2], 0), ([1, 1, 0], 0)])
+        in (layerForwardSet firstLayer examples) `shouldBe` fromList 2 2 [16, 10, 29, 17]
 
     describe "layerBackward" $ do
       it "calculates correctly for single output" $

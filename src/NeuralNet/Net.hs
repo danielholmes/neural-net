@@ -12,7 +12,6 @@ module NeuralNet.Net (
 
 import System.Random
 import Data.Matrix
-import qualified Data.Vector as Vector
 import NeuralNet.Activation
 import NeuralNet.Layer
 import NeuralNet.Example
@@ -85,12 +84,10 @@ nnForward nn inputs = map toList setResult
     setResult = nnForwardSet nn set
 
 nnForwardSet :: NeuralNet -> ExampleSet -> [Matrix Double]
-nnForwardSet nn examples = map (\l -> fromList (length l) 1 l) orderedResult
+nnForwardSet nn examples = reverse (init foldResult)
   where
-    x = exampleSetX examples
-    inputs = Vector.toList (getCol 1 x)
-    foldResult = foldl (\i l -> layerForward l (head i) : i) [inputs] (nnLayers nn)
-    orderedResult = tail (reverse foldResult)
+    x = exampleSetX examples :: Matrix Double
+    foldResult = foldl (\i l -> layerForwardSet l (head i) : i) [x] (nnLayers nn)
 
 nnNumInputs :: NeuralNet -> Int
 nnNumInputs = layerNumInputs . head . nnLayers

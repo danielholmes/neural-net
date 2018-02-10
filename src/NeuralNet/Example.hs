@@ -4,6 +4,7 @@ module NeuralNet.Example (
   createExampleSet,
   exampleSetX,
   exampleSetY,
+  exampleSetM,
   exampleSetN
 ) where
 
@@ -37,3 +38,6 @@ exampleSetY (ExampleSet _ _ y) = y
 
 exampleSetN :: ExampleSet -> Int
 exampleSetN = nrows . exampleSetX
+
+exampleSetM :: ExampleSet -> Int
+exampleSetM (ExampleSet e _ _) = length e

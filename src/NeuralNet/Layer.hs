@@ -9,7 +9,7 @@ module NeuralNet.Layer (
 ) where
 
 import NeuralNet.Activation
-import NeuralNet.Example
+import NeuralNet.Matrix
 import Data.Matrix
 import qualified Data.Vector as Vector
 
@@ -17,23 +17,20 @@ data NeuronLayer = NeuronLayer Activation (Matrix Double) [Double]
   deriving (Show, Eq)
 
 layerForward :: NeuronLayer -> [Double] -> [Double]
-layerForward l x = Vector.toList (getCol 1 rawResult)
-  where
-    examples = createExampleSet [(x, error "Undefined")]
-    rawResult = layerForwardSet l examples
+layerForward l x = Vector.toList (getCol 1 (layerForwardSet l (fromList (length x) 1 x)))
 
-
-layerForwardSet :: NeuronLayer -> ExampleSet -> Matrix Double
-layerForwardSet l examples
+layerForwardSet :: NeuronLayer -> Matrix Double -> Matrix Double
+layerForwardSet l x
   | expInputs /= n = error ("Layer " ++ show l ++ " expected " ++ show expInputs ++ " inputs but got " ++ show n)
   | otherwise      = a
     where
       expInputs = layerNumInputs l
-      n = exampleSetN examples
-      x = exampleSetX examples
+      n = nrows x
+      m = ncols x
       wt = transpose (layerW l)
       b = colVector (Vector.fromList (layerB l))
-      z = wt * x + b
+      bProjected = projectMatrixX b m
+      z = wt * x + bProjected
       a = forward (layerActivation l) z
 
 layerW :: NeuronLayer -> Matrix Double
