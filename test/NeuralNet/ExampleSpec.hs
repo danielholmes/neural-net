@@ -19,7 +19,7 @@ exampleSpec =
         let
           examples = [([1, 2, 3], 4), ([5, 6, 7], 8)]
           set = createExampleSet examples
-        in exampleSetY set `shouldBe` (fromList 2 1 [4, 8])
+        in exampleSetY set `shouldBe` (fromList 1 2 [4, 8])
 
       it "throws error for misaligned example sizes" $
         let examples = [([1..10], 4), ([1..2], 8)]

@@ -28,7 +28,7 @@ createExampleSet e
       m = length e
       n = head exampleSizes
       x = matrix n m (\(r, c) -> (fst (e!!(c - 1)))!!(r - 1))
-      y = fromList m 1 (map snd e)
+      y = fromList 1 m (map snd e)
 
 exampleSetX :: ExampleSet -> Matrix Double
 exampleSetX (ExampleSet _ x _) = x

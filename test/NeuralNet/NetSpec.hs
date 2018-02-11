@@ -106,7 +106,7 @@ netSpec g =
 
       it "calculates correctly for logreg" $
         let nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
-        in nnForward nn [1, 1, 2] `shouldBe` [[13.0]]
+        in nnForward nn [1, 1, 2] `shouldBe` [13.0]
 
       it "calculates correctly for multi layer" $
         let
@@ -119,17 +119,17 @@ netSpec g =
             0]
           nn = buildNNFromList def nums
         in
-          nnForward nn [1, 1, 1] `shouldBe` [[0.5, 0.5], [2.5]]
+          nnForward nn [1, 1, 1] `shouldBe` [2.5]
 
     describe "nnForwardSet" $ do
       it "calculates correctly for logreg" $
         let
           nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
           examples = createExampleSet [([1, 1, 2], 0)]
-        in nnForwardSet nn examples `shouldBe` [matrix 1 1 (const 13.0)]
+        in nnForwardSet nn examples `shouldBe` [fromList 3 1 [1, 1, 2], matrix 1 1 (const 13.0)]
 
       it "calculates correctly for multiple examples, multiple output" $
         let
           nn = buildNNFromList (3, [LayerDefinition ReLU 2, LayerDefinition ReLU 1]) [1, 4, 2, 5, 3, 6, 7, 8, 1, 1, 0]
           examples = createExampleSet [([1, 1, 2], 0), ([1, 1, 0], 0)]
-        in nnForwardSet nn examples `shouldBe` [fromList 2 2 [16, 10, 29, 17], fromList 1 2 [45, 27]]
+        in nnForwardSet nn examples `shouldBe` [fromList 3 2 [1, 1, 1, 1, 2, 0], fromList 2 2 [16, 10, 29, 17], fromList 1 2 [45, 27]]

@@ -77,14 +77,14 @@ buildLayersFromList numInputs ((LayerDefinition a numNeurons):ds) xs = layer : (
 nnLayers :: NeuralNet -> [NeuronLayer]
 nnLayers (NeuralNet layers) = layers
 
-nnForward :: NeuralNet -> [Double] -> [[Double]]
-nnForward nn inputs = map toList setResult
+nnForward :: NeuralNet -> [Double] -> [Double]
+nnForward nn inputs = toList (last setResult)
   where
     set = createExampleSet [(inputs, error "Undefined")]
     setResult = nnForwardSet nn set
 
 nnForwardSet :: NeuralNet -> ExampleSet -> [Matrix Double]
-nnForwardSet nn examples = reverse (init foldResult)
+nnForwardSet nn examples = reverse foldResult
   where
     x = exampleSetX examples :: Matrix Double
     foldResult = foldl (\i l -> layerForwardSet l (head i) : i) [x] (nnLayers nn)
