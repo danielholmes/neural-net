@@ -17,6 +17,7 @@ import NeuralNet.Layer
 import NeuralNet.Example
 
 type NumNeurons = Int
+type NumInputs = Int
 
 type NeuralNetDefinition = (NumInputs, [LayerDefinition])
 
@@ -25,8 +26,6 @@ data LayerDefinition = LayerDefinition Activation NumNeurons
 
 data NeuralNet = NeuralNet [NeuronLayer]
   deriving (Show, Eq)
-
-type NumInputs = Int
 
 initNN :: StdGen -> NeuralNetDefinition -> NeuralNet
 initNN _ (_, []) = error "No layer definitions provided"
@@ -78,16 +77,17 @@ nnLayers :: NeuralNet -> [NeuronLayer]
 nnLayers (NeuralNet layers) = layers
 
 nnForward :: NeuralNet -> [Double] -> [Double]
-nnForward nn inputs = toList (last setResult)
+nnForward nn inputs = toList (forwardPropA (last setResult))
   where
     set = createExampleSet [(inputs, error "Undefined")]
     setResult = nnForwardSet nn set
 
-nnForwardSet :: NeuralNet -> ExampleSet -> [Matrix Double]
+nnForwardSet :: NeuralNet -> ExampleSet -> [ForwardPropStep]
 nnForwardSet nn examples = reverse foldResult
   where
     x = exampleSetX examples :: Matrix Double
-    foldResult = foldl (\i l -> layerForwardSet l (head i) : i) [x] (nnLayers nn)
+    input = createInputForwardPropStep x
+    foldResult = foldl (\i l -> layerForwardSet l (forwardPropA (head i)) : i) [input] (nnLayers nn)
 
 nnNumInputs :: NeuralNet -> Int
 nnNumInputs = layerNumInputs . head . nnLayers
