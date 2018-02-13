@@ -35,7 +35,7 @@ initNN g (numInputs, layerDefs)
 
 initNeuronLayers :: StdGen -> Int -> [LayerDefinition] -> ([NeuronLayer], StdGen)
 initNeuronLayers g _ [] = ([], g)
-initNeuronLayers g numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer a w (replicate numNeurons 0) : ls, newG2)
+initNeuronLayers g numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer a w (fromList numNeurons 1 (replicate numNeurons 0)) : ls, newG2)
   where
     foldStep :: Int -> ([Double], StdGen) -> ([Double], StdGen)
     foldStep _ (accu, foldG) = (d:accu, newFoldG)
@@ -44,7 +44,7 @@ initNeuronLayers g numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer 
 
     seeds = [1..(numInputs * numNeurons)]
     (nums, newG) = foldr foldStep ([], g) seeds
-    w = fromList numInputs numNeurons nums
+    w = fromList numNeurons numInputs nums
     (ls, newG2) = initNeuronLayers newG numNeurons ds
 
 buildNNFromList :: NeuralNetDefinition -> [Double] -> NeuralNet
@@ -71,7 +71,7 @@ buildLayersFromList numInputs ((LayerDefinition a numNeurons):ds) xs = layer : (
     size = numInputs * numNeurons
     (layerXs, afterLayerXs) = splitAt size xs
     (bs, restXs) = splitAt numNeurons afterLayerXs
-    layer = NeuronLayer a (fromList numInputs numNeurons layerXs) bs
+    layer = NeuronLayer a (fromList numNeurons numInputs layerXs) (fromList (length bs) 1 bs)
 
 nnLayers :: NeuralNet -> [NeuronLayer]
 nnLayers (NeuralNet layers) = layers

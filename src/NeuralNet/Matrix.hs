@@ -1,12 +1,20 @@
 module NeuralNet.Matrix (
   mapMatrix,
-  projectMatrixX
+  projectMatrixCols,
+  sumRows
 ) where
 
 import Data.Matrix
+import qualified Data.Vector as Vector
 
 mapMatrix :: (a -> a) -> Matrix a -> Matrix a
 mapMatrix f m = foldr (mapRow (\_ x -> f x)) m [1..(nrows m)]
 
-projectMatrixX :: Matrix a -> Int -> Matrix a
-projectMatrixX m n = foldl (\mx _ -> mx <|> m) m [1..(n - 1)]
+projectMatrixCols :: Matrix a -> Int -> Matrix a
+projectMatrixCols m n = foldl (\mx _ -> mx <|> m) m [1..(n - 1)]
+
+sumRows :: Num a => Matrix a -> Matrix a
+sumRows m = foldl (\n r -> setElem (sum (Vector.toList (getRow r m))) (r, 1) n) base [1..size]
+  where
+    size = nrows m
+    base = zero size 1

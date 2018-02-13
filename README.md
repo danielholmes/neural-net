@@ -25,6 +25,17 @@ stack build --pedantic
 stack test --pedantic
 ```
 
+With watching of files for changes
 ```bash
 stack test --file-watch --pedantic
+```
+
+With error stack traces
+```bash
+stack test --pedantic --file-watch --profile
+```
+
+With more tracing
+```bash
+stack test --pedantic --file-watch --trace .
 ```

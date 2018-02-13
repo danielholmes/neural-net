@@ -8,6 +8,7 @@ import NeuralNet.Layer
 import NeuralNet.Example
 import NeuralNet.Matrix
 import Data.Matrix
+import Debug.Trace
 
 
 nnBackward :: NeuralNet -> [ForwardPropStep] -> ExampleSet -> [(Matrix Double, Matrix Double)]
@@ -32,13 +33,16 @@ nnBackwardMidLayer layer prevLayer step prevDZ = (dW, db, dZ)
     a = forwardPropA step
     z = forwardPropZ step
     m = fromIntegral (ncols a)
-    dZ = (transpose (layerW prevLayer) * prevDZ) * (backward (layerActivation layer) z)
-    dW = mapMatrix (/ m) (dZ * transpose a)
-    db = mapMatrix (/ m) dZ -- (sum dZ)
+    -- np.dot(W2.T, dZ2) * (1 - np.power(A1, 2))
+    dZFirst = traceShow ("a", a, "z", z , "w", layerW prevLayer, "prevDZ", prevDZ) (transpose (layerW prevLayer) * prevDZ)
+    dZSecond = backward (layerActivation layer) z
+    dZ = traceShow ("dZ1 calcs", dZFirst) (dZFirst * dZSecond)
+    dW = traceShow ("dW calcs", "dZ1", dZ, "X", a) (mapMatrix (/ m) (dZ * transpose a))
+    db = mapMatrix (/ m) (sumRows dZ)
 
 nnBackwardLastLayer :: Matrix Double -> Int -> Matrix Double -> Matrix Double -> (Matrix Double, Matrix Double, Matrix Double)
-nnBackwardLastLayer y m asn asnm1 = (dw, db, dz)
+nnBackwardLastLayer y m asn asnm1 = (dW, db, dZ)
   where
-    dz = asn - y
-    dw = mapMatrix (/ fromIntegral m) (dz * transpose asnm1)
-    db = mapMatrix (/ fromIntegral m) dz
+    dZ = asn - y
+    dW = mapMatrix (/ fromIntegral m) (dZ * transpose asnm1)
+    db = mapMatrix (/ fromIntegral m) (sumRows dZ)

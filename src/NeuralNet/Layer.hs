@@ -17,7 +17,7 @@ import NeuralNet.Matrix
 import Data.Matrix
 import qualified Data.Vector as Vector
 
-data NeuronLayer = NeuronLayer Activation (Matrix Double) [Double]
+data NeuronLayer = NeuronLayer Activation (Matrix Double) (Matrix Double)
   deriving (Show, Eq)
 
 data ForwardPropStep = ForwardPropStep
@@ -26,10 +26,11 @@ data ForwardPropStep = ForwardPropStep
   }
 
 createInputForwardPropStep :: Matrix Double -> ForwardPropStep
-createInputForwardPropStep a = ForwardPropStep { forwardPropA = a, forwardPropZ = error "Undefined" }
+createInputForwardPropStep a = ForwardPropStep { forwardPropA = a, forwardPropZ = zero 0 0 }
 
 layerForward :: NeuronLayer -> [Double] -> [Double]
-layerForward l x = Vector.toList (getCol 1 (forwardPropA (layerForwardSet l (fromList (length x) 1 x))))
+layerForward l inputs = Vector.toList (getCol 1 (forwardPropA (layerForwardSet l x)))
+  where x = colVector (Vector.fromList inputs)
 
 layerForwardSet :: NeuronLayer -> Matrix Double -> ForwardPropStep
 layerForwardSet l x
@@ -39,19 +40,19 @@ layerForwardSet l x
       expInputs = layerNumInputs l
       n = nrows x
       m = ncols x
-      wt = transpose (layerW l)
-      b = colVector (Vector.fromList (layerB l))
-      bProjected = projectMatrixX b m
-      z = wt * x + bProjected
+      w = layerW l
+      b = layerB l
+      bProjected = projectMatrixCols b m
+      z = w * x + bProjected
       a = forward (layerActivation l) z
 
 layerW :: NeuronLayer -> Matrix Double
 layerW (NeuronLayer _ w _) = w
 
 layerNumInputs :: NeuronLayer -> Int
-layerNumInputs = nrows . layerW
+layerNumInputs = ncols . layerW
 
-layerB :: NeuronLayer -> [Double]
+layerB :: NeuronLayer -> Matrix Double
 layerB (NeuronLayer _ _ b) = b
 
 layerActivation :: NeuronLayer -> Activation

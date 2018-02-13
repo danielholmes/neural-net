@@ -7,24 +7,26 @@ import NeuralNet.Matrix
 
 matrixSpec :: SpecWith ()
 matrixSpec =
-  describe "NeuralNet.Matrix" $
+  describe "NeuralNet.Matrix" $ do
     describe "mapMatrix" $ do
       it "should apply to all elements" $
         let
-          source :: Matrix Int
-          source = fromList 3 2 [0, 1, 2, 3, 4, 5, 6]
-          expected :: Matrix Int
-          expected = fromList 3 2 [0, 10, 20, 30, 40, 50, 60]
-          result = mapMatrix (* 10) source
+          source = fromLists [[0, 1], [2, 3], [4, 5]] :: Matrix Int
+          expected = fromLists [[0, 10], [20, 30], [40, 50]]
         in
-          result `shouldBe` expected
+          mapMatrix (* 10) source `shouldBe` expected
 
       it "should apply to all elements - single" $
         let
-          source :: Matrix Int
-          source = fromList 3 2 [0, 1, 2, 3, 4, 5, 6]
-          expected :: Matrix Int
-          expected = fromList 3 2 [0, 10, 20, 30, 40, 50, 60]
-          result = mapMatrix (* 10) source
+          source = fromLists [[0, 1], [2, 3], [4, 5]] :: Matrix Int
+          expected = fromLists [[0, 10], [20, 30], [40, 50]]
         in
-          result `shouldBe` expected
+          mapMatrix (* 10) source `shouldBe` expected
+
+    describe "sumRows" $
+      it "should work correctly" $
+        let
+          source = fromLists [[0, 1], [2, 3], [4, 5]] :: Matrix Int
+          expected = fromLists [[1], [5], [9]]
+        in
+          sumRows source `shouldBe` expected

@@ -21,7 +21,7 @@ createdLayer :: Activation -> (Int, Int) -> NeuronLayer -> Bool
 createdLayer a s l = activationEq && wSizeEq && bCorrect && allUnique m
   where
     m = layerW l
-    bCorrect = layerB l == replicate (snd s) 0
+    bCorrect = layerB l == fromList (fst s) 1 (replicate (fst s) 0)
     activationEq = layerActivation l == a
     wSizeEq = matrixSize m == s
 
@@ -34,16 +34,16 @@ netSpec g =
           nn = initNN g (8, [LayerDefinition ReLU 5, LayerDefinition Tanh 1, LayerDefinition Sigmoid 2])
           layers = nnLayers nn
         in do
-          layers!!0 `shouldSatisfy` createdLayer ReLU (8, 5)
-          layers!!1 `shouldSatisfy` createdLayer Tanh (5, 1)
-          layers!!2 `shouldSatisfy` createdLayer Sigmoid (1, 2)
+          layers!!0 `shouldSatisfy` createdLayer ReLU (5, 8)
+          layers!!1 `shouldSatisfy` createdLayer Tanh (1, 5)
+          layers!!2 `shouldSatisfy` createdLayer Sigmoid (2, 1)
 
       it "returns correctly for single layer definition" $
         let
           nn = initNN g (6, [LayerDefinition ReLU 5])
           layers = nnLayers nn
         in
-          layers!!0 `shouldSatisfy` createdLayer ReLU (6, 5)
+          layers!!0 `shouldSatisfy` createdLayer ReLU (5, 6)
 
       it "throws exception for no layers" $
         evaluate (initNN g (6, [])) `shouldThrow` anyException
@@ -58,8 +58,8 @@ netSpec g =
           layers = nnLayers nn
         in do
           length layers `shouldBe` 1
-          layerW (layers!!0) `shouldBe` fromList 5 1 [1, 2, 3, 4, 5]
-          layerB (layers!!0) `shouldBe` [6]
+          layerW (layers!!0) `shouldBe` fromLists [[1, 2, 3, 4, 5]]
+          layerB (layers!!0) `shouldBe` fromLists [[6]]
 
       it "creates multi output correctly" $
         let
@@ -67,8 +67,8 @@ netSpec g =
           layers = nnLayers nn
         in do
           length layers `shouldBe` 1
-          layerW (layers!!0) `shouldBe` fromList 3 2 [1, 2, 3, 4, 5, 6]
-          layerB (layers!!0) `shouldBe` [7, 8]
+          layerW (layers!!0) `shouldBe` fromLists [[1, 2, 3], [4, 5, 6]]
+          layerB (layers!!0) `shouldBe` fromLists [[7], [8]]
 
       it "creates multi layer correctly" $
         let
@@ -76,10 +76,10 @@ netSpec g =
           layers = nnLayers nn
         in do
           length layers `shouldBe` 2
-          layerW (layers!!0) `shouldBe` fromList 2 2 [1, 2, 3, 4]
-          layerB (layers!!0) `shouldBe` [5, 6]
-          layerW (layers!!1) `shouldBe` fromList 2 1 [7, 8]
-          layerB (layers!!1) `shouldBe` [9]
+          layerW (layers!!0) `shouldBe` fromLists [[1, 2], [3, 4]]
+          layerB (layers!!0) `shouldBe` fromLists [[5], [6]]
+          layerW (layers!!1) `shouldBe` fromLists [[7, 8]]
+          layerB (layers!!1) `shouldBe` fromLists [[9]]
 
       it "throw error for incorrect list size" $
         evaluate (buildNNFromList (5, [LayerDefinition ReLU 1]) [1, 2]) `shouldThrow` anyException
@@ -111,10 +111,9 @@ netSpec g =
       it "calculates correctly for multi layer" $
         let
           def = (3, [LayerDefinition Sigmoid 2, LayerDefinition ReLU 1])
-          nums = [1, -1
-            , -1, 1
+          nums = [1, -1, -1
+            , 1, 1, -1
             , 1, -1
-            , -1, 1
             , 2, 3,
             0]
           nn = buildNNFromList def nums
@@ -127,11 +126,11 @@ netSpec g =
           nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
           examples = createExampleSet [([1, 1, 2], 0)]
           resultAs = map forwardPropA (nnForwardSet nn examples)
-        in resultAs `shouldBe` [fromList 3 1 [1, 1, 2], matrix 1 1 (const 13.0)]
+        in resultAs `shouldBe` [fromLists [[1], [1], [2]], matrix 1 1 (const 13.0)]
 
       it "calculates correctly for multiple examples, multiple output" $
         let
           nn = buildNNFromList (3, [LayerDefinition ReLU 2, LayerDefinition ReLU 1]) [1, 4, 2, 5, 3, 6, 7, 8, 1, 1, 0]
           examples = createExampleSet [([1, 1, 2], 0), ([1, 1, 0], 0)]
           resultAs = map forwardPropA (nnForwardSet nn examples)
-        in resultAs `shouldBe` [fromList 3 2 [1, 1, 1, 1, 2, 0], fromList 2 2 [16, 10, 29, 17], fromList 1 2 [45, 27]]
+        in resultAs `shouldBe` [fromLists [[1, 1], [1, 1], [2, 0]], fromLists [[16, 12], [28, 16]], fromLists [[44, 28]]]

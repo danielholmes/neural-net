@@ -37,11 +37,11 @@ activationSpec =
       it "should correctly work with Tanh" $
         let
           source = diagonalList 3 0 [1..]
-          expected = fromList 3 3 [1, 0, 0, 0, 4, 0, 0, 0, 9]
+          expected = fromLists [[1, 0, 0], [0, 4, 0], [0, 0, 9]]
         in backward Tanh source `shouldBe` expected
 
       it "should correctly work with Sigmoid" $
         let
-          source = fromList 2 2 [1..4]
-          expected = fromList 2 2 [0, -2, -6, -12]
+          source = fromLists [[1, 2], [3, 4]]
+          expected = fromLists [[0, -2], [-6, -12]]
         in backward Sigmoid source `shouldBe` expected
