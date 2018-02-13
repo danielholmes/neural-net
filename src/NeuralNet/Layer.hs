@@ -42,7 +42,7 @@ layerForwardSet l x
       m = ncols x
       w = layerW l
       b = layerB l
-      bProjected = projectMatrixCols b m
+      bProjected = broadcastCols b m
       z = w * x + bProjected
       a = forward (layerActivation l) z
 
