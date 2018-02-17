@@ -10,7 +10,7 @@ import NeuralNet.Train
 
 trainSpec :: SpecWith ()
 trainSpec =
-  describe "NeuralNet.Train" $
+  describe "NeuralNet.Train" $ do
     describe "nnBackward" $ do
       it "calculates correctly for simple example" $
         let
@@ -40,22 +40,12 @@ trainSpec =
         in
           nnBackward nn steps examples `shouldBe` [(dW1, db1), (dW2, db2)]
 
---      it "calculates correctly for logreg" $
---        let
---          nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
---          examples = createExampleSet [([1, 2, 3], 4), ([0, 1, 2], 1)]
---          as = nnForwardSet nn examples
---          dw = fromLists [[7.0, 19.5, 32.0]]
---          db = fromLists [[7.0, 5.5]]
---        in nnBackward nn as examples `shouldBe` [(dw, db)]
---
---      it "calculates correctly for multi layer" $
---        let
---          nn = buildNNFromList (3, [LayerDefinition ReLU 2, LayerDefinition ReLU 1]) [1..11]
---          examples = createExampleSet [([1, 2, 3], 4), ([0, 1, 2], 1)]
---          as = nnForwardSet nn examples
---          dw1 = fromLists [[7.0, 19.5, 32.0]]
---          db1 = fromLists [[7.0, 5.5]]
---          dw2 = fromLists [[7.0, 19.5, 32.0]]
---          db2 = fromLists [[7.0, 5.5]]
---        in nnBackward nn as examples `shouldBe` [(dw1, db1), (dw2, db2)]
+    describe "updateNNParams" $ do
+      it "calculates correctly for logreg case" $
+        let
+          nn = buildNNFromList (2, [LayerDefinition ReLU 1]) [1, 2, 3]
+          grads = [(fromLists [[10, 100]], fromLists [[1000]])]
+          learningRate = 0.1
+          expected = buildNNFromList (2, [LayerDefinition ReLU 1]) [0, -8, -97]
+        in
+          updateNNParams nn grads learningRate `shouldBe` expected

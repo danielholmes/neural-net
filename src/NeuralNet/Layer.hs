@@ -10,7 +10,8 @@ module NeuralNet.Layer (
   layerActivation,
   layerNumInputs,
   layerForward,
-  layerForwardSet
+  layerForwardSet,
+  updateLayerParams
 ) where
 
 import NeuralNet.Activation
@@ -67,3 +68,9 @@ layerB (NeuronLayer _ _ b) = b
 
 layerActivation :: NeuronLayer -> Activation
 layerActivation (NeuronLayer a _ _) = a
+
+updateLayerParams :: NeuronLayer -> Matrix Double -> Matrix Double -> NeuronLayer
+updateLayerParams l newW newB
+  | dims (layerW l) /= dims newW = error "Ws don't align"
+  | dims (layerB l) /= dims newB = error "bs don't align"
+  | otherwise                    = NeuronLayer (layerActivation l) newW newB

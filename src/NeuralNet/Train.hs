@@ -1,5 +1,6 @@
 module NeuralNet.Train (
-  nnBackward
+  nnBackward,
+  updateNNParams
 ) where
 
 import NeuralNet.Net
@@ -43,3 +44,18 @@ nnBackwardLayer l dA prevA z = (dANext, dW, db)
     dW = mapMatrix (/m) (dZ * transpose prevA)
     db = mapMatrix (/m) (sumRows dZ)
     dANext = transpose (layerW l) * dZ
+
+updateNNParams :: NeuralNet -> [(Matrix Double, Matrix Double)] -> Double -> NeuralNet
+updateNNParams nn grads learningRate
+  | length layers /= length grads = error "Must provide one grad per layer"
+  | otherwise                     = updateNNLayers nn newLayers
+    where
+      layers = nnLayers nn
+      layerSets = zip layers grads
+      newLayers = map (\(l, (dW, dB)) -> updateLayerParamsFromGrads l dW dB learningRate) layerSets
+
+updateLayerParamsFromGrads :: NeuronLayer -> Matrix Double -> Matrix Double -> Double -> NeuronLayer
+updateLayerParamsFromGrads l dW db learningRate = updateLayerParams l newDw newDb
+  where
+    newDw = elementwise (-) (layerW l) (mapMatrix (* learningRate) dW)
+    newDb = elementwise (-) (layerB l) (mapMatrix (* learningRate) db)

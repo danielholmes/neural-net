@@ -1,4 +1,5 @@
 module NeuralNet.Net (
+  NeuralNetDefinition,
   LayerDefinition (LayerDefinition),
   NeuralNet,
   initNN,
@@ -7,11 +8,14 @@ module NeuralNet.Net (
   nnNumInputs,
   nnForward,
   nnForwardSet,
-  isExampleSetCompatibleWithNN
+  isExampleSetCompatibleWithNN,
+  isExampleSetCompatibleWithNNDef,
+  updateNNLayers
 ) where
 
 import System.Random
 import Data.Matrix
+import NeuralNet.Matrix
 import NeuralNet.Activation
 import NeuralNet.Layer
 import NeuralNet.Example
@@ -92,5 +96,20 @@ nnForwardSet nn examples = reverse foldResult
 nnNumInputs :: NeuralNet -> Int
 nnNumInputs = layerNumInputs . head . nnLayers
 
+isExampleSetCompatibleWithNNDef :: ExampleSet -> NeuralNetDefinition -> Bool
+isExampleSetCompatibleWithNNDef examples def = isExampleSetCompatibleWithNN examples emptyNN
+  where
+    nums = replicate (definitionToNNSize def) 0
+    emptyNN = buildNNFromList def nums
+
 isExampleSetCompatibleWithNN :: ExampleSet -> NeuralNet -> Bool
 isExampleSetCompatibleWithNN examples nn = nnNumInputs nn == exampleSetN examples
+
+updateNNLayers :: NeuralNet -> [NeuronLayer] -> NeuralNet
+updateNNLayers nn newLayers
+  | layersShapes layers /= layersShapes newLayers = error "Must provide same shaped layers"
+  | otherwise                                     = NeuralNet newLayers
+    where
+      layersShapes :: [NeuronLayer] -> [((Int, Int), (Int, Int))]
+      layersShapes sLayers = map (\l -> (dims (layerW l), dims (layerB l))) sLayers
+      layers = nnLayers nn
