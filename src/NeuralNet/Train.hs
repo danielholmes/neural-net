@@ -2,47 +2,44 @@ module NeuralNet.Train (
   nnBackward
 ) where
 
-import NeuralNet.Activation
 import NeuralNet.Net
 import NeuralNet.Layer
 import NeuralNet.Example
+import NeuralNet.Activation
 import NeuralNet.Matrix
 import Data.Matrix
-import Debug.Trace
 
 
 nnBackward :: NeuralNet -> [ForwardPropStep] -> ExampleSet -> [(Matrix Double, Matrix Double)]
 nnBackward nn steps examples
-  | numLayers /= asSize - 1 = error "should be one entry for each layer"
-  | otherwise               = result
+  | numLayers /= stepsSize - 1 = error ("should be one entry (" ++ show stepsSize ++ ") for each layer (" ++ show numLayers ++ ")")
+  | otherwise                  = reverse (nnBackwardStep layers orderedSteps dAL)
     where
-      layers = nnLayers nn
+      layers = reverse (nnLayers nn)
+      orderedSteps = reverse steps
       numLayers = length layers
-      as = map forwardPropA steps
-      asSize = length as
+      stepsSize = length steps
+
       y = exampleSetY examples
-      m = exampleSetM examples
-      lastLayer = nnBackwardLastLayer y m (as!!numLayers) (as!!(numLayers - 1))
-      (_, _, dZ) = lastLayer
-      secondLastLayer = nnBackwardMidLayer (layers!!1) (layers!!0) (steps!!0) dZ
-      result = map (\(dw, db, _) -> (dw, db)) [secondLastLayer, lastLayer]
+      al = forwardPropA (head orderedSteps)
+      unitRowVector = matrix 1 (ncols y) (const 1)
+      dAL1 = elementwise (/) y al
+      dAL2 = elementwise (/) (unitRowVector - y) (unitRowVector - al)
+      dAL = -(elementwise (-) dAL1 dAL2)
 
-nnBackwardMidLayer :: NeuronLayer -> NeuronLayer -> ForwardPropStep -> Matrix Double -> (Matrix Double, Matrix Double, Matrix Double)
-nnBackwardMidLayer layer prevLayer step prevDZ = (dW, db, dZ)
+nnBackwardStep :: [NeuronLayer] -> [ForwardPropStep] -> Matrix Double -> [(Matrix Double, Matrix Double)]
+nnBackwardStep [] _ _ = []
+nnBackwardStep _ [] _ = error "Shouldn't get here"
+nnBackwardStep _ [_] _ = error "Shouldn't get here"
+nnBackwardStep (l:ls) (s:ss@(ps:_)) prevDA = (dW, db) : nnBackwardStep ls ss dA
   where
-    a = forwardPropA step
-    z = forwardPropZ step
-    m = fromIntegral (ncols a)
-    -- np.dot(W2.T, dZ2) * (1 - np.power(A1, 2))
-    dZFirst = traceShow ("a", a, "z", z , "w", layerW prevLayer, "prevDZ", prevDZ) (transpose (layerW prevLayer) * prevDZ)
-    dZSecond = backward (layerActivation layer) z
-    dZ = traceShow ("dZ1 calcs", dZFirst) (dZFirst * dZSecond)
-    dW = traceShow ("dW calcs", "dZ1", dZ, "X", a) (mapMatrix (/ m) (dZ * transpose a))
-    db = mapMatrix (/ m) (sumRows dZ)
+    (dA, dW, db) = nnBackwardLayer l prevDA (forwardPropA ps) (forwardPropZ s)
 
-nnBackwardLastLayer :: Matrix Double -> Int -> Matrix Double -> Matrix Double -> (Matrix Double, Matrix Double, Matrix Double)
-nnBackwardLastLayer y m asn asnm1 = (dW, db, dZ)
+nnBackwardLayer :: NeuronLayer -> Matrix Double -> Matrix Double -> Matrix Double -> (Matrix Double, Matrix Double, Matrix Double)
+nnBackwardLayer l dA prevA z = (dANext, dW, db)
   where
-    dZ = asn - y
-    dW = mapMatrix (/ fromIntegral m) (dZ * transpose asnm1)
-    db = mapMatrix (/ fromIntegral m) (sumRows dZ)
+    m = fromIntegral (ncols prevA)
+    dZ = backward (layerActivation l) dA z
+    dW = mapMatrix (/m) (dZ * transpose prevA)
+    db = mapMatrix (/m) (sumRows dZ)
+    dANext = transpose (layerW l) * dZ

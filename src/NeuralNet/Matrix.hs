@@ -2,7 +2,9 @@ module NeuralNet.Matrix (
   mapMatrix,
   broadcastCols,
   sumRows,
-  sumMatrix
+  sumMatrix,
+  dims,
+  dimsEq
 ) where
 
 import Data.Matrix
@@ -22,3 +24,9 @@ sumRows m = foldl (\n r -> setElem (sum (Vector.toList (getRow r m))) (r, 1) n) 
 
 sumMatrix :: Num a => Matrix a -> a
 sumMatrix = sum . toList
+
+dims :: Matrix a -> (Int, Int)
+dims m = (nrows m, ncols m)
+
+dimsEq :: Matrix a -> Matrix b -> Bool
+dimsEq x y = dims x == dims y
