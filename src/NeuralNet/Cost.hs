@@ -1,11 +1,11 @@
-module NeuralNet.Cost (cost) where
+module NeuralNet.Cost (computeCost) where
 
 import Data.Matrix
 import NeuralNet.Matrix
 
 
-cost :: Matrix Double -> Matrix Double -> Double
-cost al y
+computeCost :: Matrix Double -> Matrix Double -> Double
+computeCost al y
   | nrows al /= 1       = error "al should be a row vector"
   | nrows y /= 1        = error "y should be a row vector"
   | ncols y /= ncols al = error "y and al should be same length"
