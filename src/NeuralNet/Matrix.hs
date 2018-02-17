@@ -1,7 +1,8 @@
 module NeuralNet.Matrix (
   mapMatrix,
   broadcastCols,
-  sumRows
+  sumRows,
+  sumMatrix
 ) where
 
 import Data.Matrix
@@ -18,3 +19,6 @@ sumRows m = foldl (\n r -> setElem (sum (Vector.toList (getRow r m))) (r, 1) n) 
   where
     size = nrows m
     base = zero size 1
+
+sumMatrix :: Num a => Matrix a -> a
+sumMatrix = sum . toList

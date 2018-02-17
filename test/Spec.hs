@@ -5,6 +5,7 @@ import NeuralNet.MatrixSpec
 import NeuralNet.ActivationSpec
 import NeuralNet.TrainSpec
 import NeuralNet.ExampleSpec
+import NeuralNet.CostSpec
 import System.Random
 
 main :: IO ()
@@ -14,6 +15,7 @@ main = do
     matrixSpec
     activationSpec
     exampleSpec
+    costSpec
     layerSpec
     netSpec generator
     trainSpec
