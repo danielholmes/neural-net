@@ -1,6 +1,7 @@
 module NeuralNet.Net (
   NeuralNetDefinition,
   LayerDefinition (LayerDefinition),
+  WeightInitialiser (Random, Const),
   NeuralNet,
   initNN,
   buildNNFromList,
@@ -10,7 +11,8 @@ module NeuralNet.Net (
   nnForwardSet,
   isExampleSetCompatibleWithNN,
   isExampleSetCompatibleWithNNDef,
-  updateNNLayers
+  updateNNLayers,
+  createLogRegDefinition
 ) where
 
 import System.Random
@@ -25,25 +27,36 @@ type NumInputs = Int
 
 type NeuralNetDefinition = (NumInputs, [LayerDefinition])
 
+data WeightInitialiser = Random StdGen | Const Double
+  deriving (Show)
+
 data LayerDefinition = LayerDefinition Activation NumNeurons
   deriving (Show, Eq)
 
 data NeuralNet = NeuralNet [NeuronLayer]
   deriving (Show, Eq)
 
-initNN :: StdGen -> NeuralNetDefinition -> NeuralNet
+nextInitValue :: WeightInitialiser -> (Double, WeightInitialiser)
+nextInitValue (Random g) = (v, Random nextG)
+  where (v, nextG) = randomR (0.0, 1.0) g
+nextInitValue c@(Const v) = (v, c)
+
+createLogRegDefinition :: NumInputs -> Activation -> NeuralNetDefinition
+createLogRegDefinition n a = (n, [LayerDefinition a 1])
+
+initNN :: WeightInitialiser -> NeuralNetDefinition -> NeuralNet
 initNN _ (_, []) = error "No layer definitions provided"
 initNN g (numInputs, layerDefs)
   | numInputs > 0 = NeuralNet (fst (initNeuronLayers g numInputs layerDefs))
   | otherwise     = error "Need positive num inputs"
 
-initNeuronLayers :: StdGen -> Int -> [LayerDefinition] -> ([NeuronLayer], StdGen)
+initNeuronLayers :: WeightInitialiser -> Int -> [LayerDefinition] -> ([NeuronLayer], WeightInitialiser)
 initNeuronLayers g _ [] = ([], g)
 initNeuronLayers g numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer a w (fromList numNeurons 1 (replicate numNeurons 0)) : ls, newG2)
   where
-    foldStep :: Int -> ([Double], StdGen) -> ([Double], StdGen)
+    foldStep :: Int -> ([Double], WeightInitialiser) -> ([Double], WeightInitialiser)
     foldStep _ (accu, foldG) = (d:accu, newFoldG)
-      where (d, newFoldG) = randomR (0.0, 1.0) foldG
+      where (d, newFoldG) = nextInitValue foldG
     -- TODO: Look into replicateM instead of this
 
     seeds = [1..(numInputs * numNeurons)]

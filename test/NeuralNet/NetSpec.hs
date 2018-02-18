@@ -26,7 +26,8 @@ createdLayer a s l = activationEq && wSizeEq && bCorrect && allUnique m
     wSizeEq = matrixSize m == s
 
 netSpec :: StdGen -> SpecWith ()
-netSpec g =
+netSpec stdGen = do
+  let g = Random stdGen
   describe "NeuralNet.Net" $ do
     describe "initNN" $ do
       it "returns correctly for small definition" $

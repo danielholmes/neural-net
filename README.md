@@ -39,3 +39,16 @@ With more tracing
 ```bash
 stack test --pedantic --file-watch --trace .
 ```
+
+
+## Running
+
+```bash
+stack exec neural-net-exe -- --help
+```
+
+Simple Logistic Regression example:
+
+```bash
+stack exec neural-net-exe -- -c -l 0.005 -i 1000 examples/simple-csv/train.csv examples/simple-csv/test.csv
+```
