@@ -60,8 +60,8 @@ createProblem def trainSet testSet learningRate numIterations
   | learningRate <= 0                                  = error "Must provide positive learningRate"
   | otherwise                                          = Problem def trainSet testSet learningRate numIterations
 
-runProblem :: WeightsStream -> Problem -> (Double -> Double -> Bool) -> (NeuralNet, [RunStep])
-runProblem g p accuracyCheck = (resultNN, tail allSteps)
+runProblem :: WeightsStream -> Problem -> (Double -> Double -> Bool) -> (NeuralNet, [RunStep], Double)
+runProblem g p accuracyCheck = (resultNN, tail allSteps, testAccuracy)
   where
     startNN = initNN g (problemNNDef p)
     startStep = RunStep 0 1 0
@@ -70,14 +70,23 @@ runProblem g p accuracyCheck = (resultNN, tail allSteps)
     allSteps = map snd allNNAndSteps
     resultNN = fst (last allNNAndSteps)
 
+    testSet = problemTestSet p
+    testA = forwardPropA (last (nnForwardSet resultNN testSet))
+    testAccuracy = calcAccuracy accuracyCheck testA (exampleSetY testSet)
+
 runProblemStep :: Problem -> IterationNum -> NeuralNet -> (Double -> Double -> Bool) -> (NeuralNet, RunStep)
 runProblemStep p i nn accuracyCheck = (newNN, RunStep i cost accuracy)
   where
-    exampleSet = problemTrainSet p
-    forwardSteps = nnForwardSet nn exampleSet
+    trainSet = problemTrainSet p
+    forwardSteps = nnForwardSet nn trainSet
     al = forwardPropA (last forwardSteps)
-    y = exampleSetY exampleSet
-    cost = computeCost al y
-    grads = nnBackward nn forwardSteps exampleSet
+    y = exampleSetY trainSet
+    grads = nnBackward nn forwardSteps trainSet
     newNN = updateNNParams nn grads (problemLearningRate p)
-    accuracy = fromIntegral (length (filter (uncurry accuracyCheck) (zip (toList al) (toList y)))) / fromIntegral (ncols y)
+    cost = computeCost al y
+    accuracy = calcAccuracy accuracyCheck al y
+
+calcAccuracy :: (Double -> Double -> Bool) -> Matrix Double -> Matrix Double -> Double
+calcAccuracy accuracyCheck yHat y = fromIntegral numCorrect / fromIntegral (ncols y)
+  where
+    numCorrect = length (filter (uncurry accuracyCheck) (zip (toList yHat) (toList y)))

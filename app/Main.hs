@@ -36,13 +36,18 @@ main = do
   options <- cmdArgs optionsDef
   problem <- loadProblem options
   weights <- createWeightsStream options
-  let (nn, steps) = runProblem weights problem (\yh y -> ((round yh) :: Int) == ((round y) :: Int))
+  let (nn, steps, testAccuracy) = runProblem weights problem (\yh y -> ((round yh) :: Int) == ((round y) :: Int))
   putStrLn (intercalate "\n" (map formatStepLine (every 10 (drop 9 steps))))
+  putStrLn "Done in 0ms"
   print nn
+  putStrLn ("Train Accuracy: " ++ formatPercent (runStepAccuracy (last steps)))
+  putStrLn ("Test Accuracy: " ++ formatPercent testAccuracy)
 
 formatStepLine :: RunStep -> String
-formatStepLine s = show (runStepIteration s) ++ ") " ++ show (runStepCost s) ++ " " ++ show accuracy ++ "%"
-  where accuracy = (round (100.0 * runStepAccuracy s)) :: Int
+formatStepLine s = show (runStepIteration s) ++ ") " ++ show (runStepCost s) ++ " " ++ formatPercent (runStepAccuracy s)
+
+formatPercent :: Double -> String
+formatPercent r = show (round (100.0 * r) :: Int) ++ "%"
 
 createWeightsStream :: RunOptions -> IO WeightsStream
 createWeightsStream options = case constInitWeights options of
