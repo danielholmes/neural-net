@@ -34,8 +34,8 @@ main :: IO ()
 main = do
   options <- cmdArgs optionsDef
   problem <- loadProblem options
-  gen <- createWeightInit options
-  let (nn, steps) = runProblem gen problem (\yh y -> ((round yh) :: Int) == ((round y) :: Int))
+  weights <- createWeightsStream options
+  let (nn, steps) = runProblem weights problem (\yh y -> ((round yh) :: Int) == ((round y) :: Int))
   putStrLn (intercalate "\n" (map formatStepLine steps))
   print nn
 
@@ -43,12 +43,13 @@ formatStepLine :: RunStep -> String
 formatStepLine s = show (runStepIteration s) ++ ") " ++ show (runStepCost s) ++ " " ++ show accuracy ++ "%"
   where accuracy = (round (100.0 * runStepAccuracy s)) :: Int
 
-createWeightInit :: RunOptions -> IO WeightInitialiser
-createWeightInit options = case constInitWeights options of
-  True -> return (Const 0)
+createWeightsStream :: RunOptions -> IO WeightsStream
+createWeightsStream options = case constInitWeights options of
+  True -> return (repeat 0)
   False -> do
             stdGen <- getStdGen
-            return (Random stdGen)
+            return (randomRs (0, 0.1) stdGen)
+            --return (randomRs (0, 0.1) (read "1 0" :: StdGen))
 
 loadProblem :: RunOptions -> IO Problem
 loadProblem (RunOptions {trainPath = train, testPath = test, numIterations = n, learningRate = a}) = do

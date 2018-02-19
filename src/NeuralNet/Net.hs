@@ -1,7 +1,7 @@
 module NeuralNet.Net (
   NeuralNetDefinition,
   LayerDefinition (LayerDefinition),
-  WeightInitialiser (Random, Const),
+  WeightsStream,
   NeuralNet,
   initNN,
   buildNNFromList,
@@ -15,7 +15,6 @@ module NeuralNet.Net (
   createLogRegDefinition
 ) where
 
-import System.Random
 import Data.Matrix
 import NeuralNet.Matrix
 import NeuralNet.Activation
@@ -24,11 +23,9 @@ import NeuralNet.Example
 
 type NumNeurons = Int
 type NumInputs = Int
-
 type NeuralNetDefinition = (NumInputs, [LayerDefinition])
 
-data WeightInitialiser = Random StdGen | Const Double
-  deriving (Show)
+type WeightsStream = [Double]
 
 data LayerDefinition = LayerDefinition Activation NumNeurons
   deriving (Show, Eq)
@@ -36,33 +33,24 @@ data LayerDefinition = LayerDefinition Activation NumNeurons
 data NeuralNet = NeuralNet [NeuronLayer]
   deriving (Show, Eq)
 
-nextInitValue :: WeightInitialiser -> (Double, WeightInitialiser)
-nextInitValue (Random g) = (v, Random nextG)
-  where (v, nextG) = randomR (0.0, 1.0) g
-nextInitValue c@(Const v) = (v, c)
-
 createLogRegDefinition :: NumInputs -> Activation -> NeuralNetDefinition
 createLogRegDefinition n a = (n, [LayerDefinition a 1])
 
-initNN :: WeightInitialiser -> NeuralNetDefinition -> NeuralNet
+initNN :: WeightsStream -> NeuralNetDefinition -> NeuralNet
 initNN _ (_, []) = error "No layer definitions provided"
 initNN g (numInputs, layerDefs)
   | numInputs > 0 = NeuralNet (fst (initNeuronLayers g numInputs layerDefs))
   | otherwise     = error "Need positive num inputs"
 
-initNeuronLayers :: WeightInitialiser -> Int -> [LayerDefinition] -> ([NeuronLayer], WeightInitialiser)
-initNeuronLayers g _ [] = ([], g)
-initNeuronLayers g numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer a w (fromList numNeurons 1 (replicate numNeurons 0)) : ls, newG2)
+initNeuronLayers :: WeightsStream -> Int -> [LayerDefinition] -> ([NeuronLayer], WeightsStream)
+initNeuronLayers weightsStream _ [] = ([], weightsStream)
+initNeuronLayers weightsStream numInputs (LayerDefinition a numNeurons : ds) = (NeuronLayer a w b : ls, ws2)
   where
-    foldStep :: Int -> ([Double], WeightInitialiser) -> ([Double], WeightInitialiser)
-    foldStep _ (accu, foldG) = (d:accu, newFoldG)
-      where (d, newFoldG) = nextInitValue foldG
-    -- TODO: Look into replicateM instead of this
-
-    seeds = [1..(numInputs * numNeurons)]
-    (nums, newG) = foldr foldStep ([], g) seeds
-    w = fromList numNeurons numInputs nums
-    (ls, newG2) = initNeuronLayers newG numNeurons ds
+    numSeeds = numInputs * numNeurons
+    (weights, ws) = splitAt numSeeds weightsStream
+    w = fromList numNeurons numInputs weights
+    b = fromList numNeurons 1 (replicate numNeurons 0)
+    (ls, ws2) = initNeuronLayers ws numNeurons ds
 
 buildNNFromList :: NeuralNetDefinition -> [Double] -> NeuralNet
 buildNNFromList def@(numInputs, layerDefs) list
@@ -79,11 +67,11 @@ definitionToNNSize (numInputs, layerDefs) = defToSizeStep numInputs layerDefs
   where
     defToSizeStep :: Int -> [LayerDefinition] -> Int
     defToSizeStep _ [] = 0
-    defToSizeStep stepInputs ((LayerDefinition _ numNeurons):ds) = (stepInputs * numNeurons) + numNeurons + defToSizeStep numNeurons ds
+    defToSizeStep stepInputs (LayerDefinition _ numNeurons:ds) = (stepInputs * numNeurons) + numNeurons + defToSizeStep numNeurons ds
 
 buildLayersFromList :: Int -> [LayerDefinition] -> [Double] -> [NeuronLayer]
 buildLayersFromList _ [] _ = []
-buildLayersFromList numInputs ((LayerDefinition a numNeurons):ds) xs = layer : (buildLayersFromList numNeurons ds restXs)
+buildLayersFromList numInputs (LayerDefinition a numNeurons:ds) xs = layer : (buildLayersFromList numNeurons ds restXs)
   where
     size = numInputs * numNeurons
     (layerXs, afterLayerXs) = splitAt size xs

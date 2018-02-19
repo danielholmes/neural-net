@@ -6,16 +6,14 @@ import NeuralNet.ActivationSpec
 import NeuralNet.TrainSpec
 import NeuralNet.ExampleSpec
 import NeuralNet.CostSpec
-import System.Random
 
 main :: IO ()
-main = do
-  generator <- getStdGen
+main =
   hspec $ do
     matrixSpec
     activationSpec
     exampleSpec
     costSpec
     layerSpec
-    netSpec generator
+    netSpec
     trainSpec

@@ -8,7 +8,6 @@ import NeuralNet.Layer
 import NeuralNet.Example
 import Control.Exception (evaluate)
 import Data.List
-import System.Random
 
 matrixSize :: Matrix Double -> (Int, Int)
 matrixSize m = (nrows m, ncols m)
@@ -25,14 +24,13 @@ createdLayer a s l = activationEq && wSizeEq && bCorrect && allUnique m
     activationEq = layerActivation l == a
     wSizeEq = matrixSize m == s
 
-netSpec :: StdGen -> SpecWith ()
-netSpec stdGen = do
-  let g = Random stdGen
+netSpec :: SpecWith ()
+netSpec =
   describe "NeuralNet.Net" $ do
     describe "initNN" $ do
       it "returns correctly for small definition" $
         let
-          nn = initNN g (8, [LayerDefinition ReLU 5, LayerDefinition Tanh 1, LayerDefinition Sigmoid 2])
+          nn = initNN [1..] (8, [LayerDefinition ReLU 5, LayerDefinition Tanh 1, LayerDefinition Sigmoid 2])
           layers = nnLayers nn
         in do
           layers!!0 `shouldSatisfy` createdLayer ReLU (5, 8)
@@ -41,16 +39,16 @@ netSpec stdGen = do
 
       it "returns correctly for single layer definition" $
         let
-          nn = initNN g (6, [LayerDefinition ReLU 5])
+          nn = initNN [1..] (6, [LayerDefinition ReLU 5])
           layers = nnLayers nn
         in
           layers!!0 `shouldSatisfy` createdLayer ReLU (5, 6)
 
       it "throws exception for no layers" $
-        evaluate (initNN g (6, [])) `shouldThrow` anyException
+        evaluate (initNN [1..] (6, [])) `shouldThrow` anyException
 
       it "throws exception for no inputs" $
-        evaluate (initNN g (0, [LayerDefinition ReLU 5])) `shouldThrow` anyException
+        evaluate (initNN [1..] (0, [LayerDefinition ReLU 5])) `shouldThrow` anyException
 
     describe "buildNNFromList" $ do
       it "creates log reg correctly" $

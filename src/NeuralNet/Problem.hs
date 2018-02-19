@@ -18,12 +18,9 @@ import Data.Matrix
 
 
 type NumIterations = Int
-
 type LearningRate = Double
-
 data Problem = Problem NeuralNetDefinition ExampleSet ExampleSet LearningRate NumIterations
   deriving (Show, Eq)
-
 
 type IterationNum = Int
 type Cost = Double
@@ -63,7 +60,7 @@ createProblem def trainSet testSet learningRate numIterations
   | learningRate <= 0                                  = error "Must provide positive learningRate"
   | otherwise                                          = Problem def trainSet testSet learningRate numIterations
 
-runProblem :: WeightInitialiser -> Problem -> (Double -> Double -> Bool) -> (NeuralNet, [RunStep])
+runProblem :: WeightsStream -> Problem -> (Double -> Double -> Bool) -> (NeuralNet, [RunStep])
 runProblem g p accuracyCheck = (resultNN, tail allSteps)
   where
     startNN = initNN g (problemNNDef p)
