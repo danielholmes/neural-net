@@ -53,8 +53,8 @@ layerForwardSet l x
       m = ncols x
       w = layerW l
       b = layerB l
-      bProjected = broadcastCols b m
-      z = w * x + bProjected
+      bBroadcasted = broadcastCols b m
+      z = w * x + bBroadcasted
       a = forward (layerActivation l) z
 
 layerW :: NeuronLayer -> Matrix Double

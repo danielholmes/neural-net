@@ -41,8 +41,9 @@ nnBackwardLayer l dA prevA z = (dANext, dW, db)
   where
     m = fromIntegral (ncols prevA)
     dZ = backward (layerActivation l) dA z
-    dW = mapMatrix (/m) (dZ * transpose prevA)
-    db = mapMatrix (/m) (sumRows dZ)
+    -- would these be quicker as an elementwise (/) (matrix r c (const m)) ? this last matrix could be cached
+    dW = scaleMatrix (1/m) (dZ * transpose prevA)
+    db = scaleMatrix (1/m) (sumRows dZ)
     dANext = transpose (layerW l) * dZ
 
 updateNNParams :: NeuralNet -> [(Matrix Double, Matrix Double)] -> Double -> NeuralNet
@@ -57,5 +58,5 @@ updateNNParams nn grads learningRate
 updateLayerParamsFromGrads :: NeuronLayer -> Matrix Double -> Matrix Double -> Double -> NeuronLayer
 updateLayerParamsFromGrads l dW db learningRate = updateLayerParams l newDw newDb
   where
-    newDw = elementwise (-) (layerW l) (mapMatrix (* learningRate) dW)
-    newDb = elementwise (-) (layerB l) (mapMatrix (* learningRate) db)
+    newDw = elementwise (-) (layerW l) (scaleMatrix learningRate dW)
+    newDb = elementwise (-) (layerB l) (scaleMatrix learningRate db)

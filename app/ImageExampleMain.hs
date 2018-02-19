@@ -24,7 +24,7 @@ loadProblem = do
   fullSet <- loadImageSet
   let (trainSet, testSet) = splitExampleSet 0.8 fullSet
   let nnDef = createLogRegDefinition (exampleSetN trainSet) Sigmoid
-  return (createProblem nnDef trainSet testSet 0.005 1)
+  return (createProblem nnDef trainSet testSet 0.005 2)
 
 loadImageSet :: IO ExampleSet
 loadImageSet = do

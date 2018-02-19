@@ -14,7 +14,8 @@ uiRunProblem problem weights = do
   let op = return (runProblem weights problem (\yh y -> (round yh :: Int) == (round y :: Int)))
   ((nn, steps, testAccuracy), time) <- stopWatch op
 
-  mapM_ (putStrLn . formatStepLine) (every 10 (drop 9 steps))
+  let reportEvery = if length steps > 100 then 10 else 1
+  mapM_ (putStrLn . formatStepLine) (every reportEvery (drop (reportEvery - 1) steps))
   putStrLn ("Done in " ++ show (toNanoSecs time `div` 1000) ++ "ms")
   if nnNumInputs nn > 3
     then putStrLn "NN too large to print"
