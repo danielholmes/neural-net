@@ -50,5 +50,11 @@ stack exec neural-net-exe -- --help
 Simple Logistic Regression example:
 
 ```bash
-stack exec neural-net-exe -- -c -l 0.005 -i 1000 examples/simple-csv/train.csv examples/simple-csv/test.csv
+stack exec logreg -- -c -l 0.005 -i 1000 examples/simple-csv/train.csv examples/simple-csv/test.csv
+```
+
+Cat image example:
+
+```bash
+stack exec image-eg
 ```

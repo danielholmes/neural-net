@@ -29,18 +29,34 @@ dependencies:
   - filepath >= 1.4.1 && < 2
   - text >= 1.2.3.0 && < 2
   - split >= 0.2.3.3 && < 1
+  - random-shuffle >= 0.0.4 && < 1
+  - JuicyPixels >= 3.2.9.4 && < 4
+  - directory >= 1.3.0.0 && < 2
+  - stopwatch >= 0.1.0.4 && < 1
+  - clock >= 0.7.2 && < 1
 
 library:
   source-dirs: src
 
 executables:
-  neural-net-exe:
-    main:                Main.hs
+  logreg:
+    main:                LogRegMain.hs
     source-dirs:         app
     ghc-options:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
+      - -main-is LogRegMain
+    dependencies:
+      - neural-net
+  image-eg:
+    main:                ImageExampleMain.hs
+    source-dirs:         app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -main-is ImageExampleMain
     dependencies:
       - neural-net
 

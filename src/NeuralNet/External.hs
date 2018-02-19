@@ -1,9 +1,11 @@
-module NeuralNet.External (loadExampleSet) where
+module NeuralNet.External (loadExampleSet, createStdGenWeightsStream) where
 
 import NeuralNet.Example
+import NeuralNet.Net
 import Text.CSV
 import System.FilePath.Posix
 import Data.Char
+import System.Random
 
 
 loadExampleSet :: FilePath -> IO ExampleSet
@@ -22,3 +24,8 @@ loadCsvExampleSet p = do
 csvToExamples :: CSV -> [Example]
 csvToExamples records = map (\r -> (init r, last r)) doubleRecords
   where doubleRecords = map (map read) records
+
+createStdGenWeightsStream :: IO WeightsStream
+createStdGenWeightsStream = do
+  stdGen <- getStdGen
+  return (randomRs (0, 0.1) stdGen)

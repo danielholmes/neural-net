@@ -5,7 +5,8 @@ module NeuralNet.Example (
   exampleSetX,
   exampleSetY,
   exampleSetM,
-  exampleSetN
+  exampleSetN,
+  splitExampleSet
 ) where
 
 import Data.Matrix
@@ -43,3 +44,9 @@ exampleSetN = nrows . exampleSetX
 
 exampleSetM :: ExampleSet -> Int
 exampleSetM (ExampleSet e _ _) = length e
+
+splitExampleSet :: Double -> ExampleSet -> (ExampleSet, ExampleSet)
+splitExampleSet ratio (ExampleSet e _ _) = (createExampleSet leftExamples, createExampleSet rightExamples)
+  where
+    (leftExamples, rightExamples) = splitAt (round (ratio * fromIntegral (length e))) e
+
