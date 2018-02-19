@@ -11,6 +11,7 @@ import System.IO ()
 import System.Random
 import Data.List
 import System.Console.CmdArgs
+import Data.List.Split
 
 
 data RunOptions = RunOptions {trainPath :: FilePath
@@ -36,7 +37,7 @@ main = do
   problem <- loadProblem options
   weights <- createWeightsStream options
   let (nn, steps) = runProblem weights problem (\yh y -> ((round yh) :: Int) == ((round y) :: Int))
-  putStrLn (intercalate "\n" (map formatStepLine steps))
+  putStrLn (intercalate "\n" (map formatStepLine (every 10 (drop 9 steps))))
   print nn
 
 formatStepLine :: RunStep -> String
@@ -49,7 +50,7 @@ createWeightsStream options = case constInitWeights options of
   False -> do
             stdGen <- getStdGen
             return (randomRs (0, 0.1) stdGen)
-            --return (randomRs (0, 0.1) (read "1 0" :: StdGen))
+            --return (randomRs (0, 0.1) (read "1 0" :: StdGen)) TODO: Allow passing an optional seed for weights generator
 
 loadProblem :: RunOptions -> IO Problem
 loadProblem (RunOptions {trainPath = train, testPath = test, numIterations = n, learningRate = a}) = do
@@ -57,3 +58,6 @@ loadProblem (RunOptions {trainPath = train, testPath = test, numIterations = n, 
   testSet <- loadExampleSet test
   let nnDef = createLogRegDefinition (exampleSetN testSet) Sigmoid
   return (createProblem nnDef trainSet testSet a n)
+
+every :: Int -> [a] -> [a]
+every n = map head . chunksOf n
