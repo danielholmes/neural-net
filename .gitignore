@@ -1,3 +1,4 @@
 .stack-work/
 neural-net.cabal
 /cabal.config
+/examples/cat-no-cat

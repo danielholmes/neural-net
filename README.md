@@ -21,6 +21,18 @@ stack init
 stack build --pedantic
 ```
 
+Continuous:
+
+```bash
+stack build --pedantic --file-watch
+```
+
+Only one executable:
+
+```bash
+stack build neural-net:exe:image-eg --pedantic --file-watch
+```
+
 
 ## Running Tests
 ```bash
@@ -55,7 +67,7 @@ Simple Logistic Regression example:
 stack exec logreg -- -c -l 0.005 -i 1000 examples/simple-csv/train.csv examples/simple-csv/test.csv
 ```
 
-Cat image example:
+Cat image example (requires copying in some files to `/examples`):
 
 ```bash
 stack exec image-eg

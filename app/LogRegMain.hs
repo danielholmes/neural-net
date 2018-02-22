@@ -37,9 +37,9 @@ main = do
   uiRunProblem problem weights
 
 createWeightsStream :: RunOptions -> IO WeightsStream
-createWeightsStream options = case constInitWeights options of
-  True  -> return (repeat 0)
-  False -> createStdGenWeightsStream
+createWeightsStream options = if constInitWeights options
+  then return (repeat 0)
+  else createStdGenWeightsStream
   --return (randomRs (0, 0.1) (read "1 0" :: StdGen)) TODO: Allow passing an optional seed for weights generator
 
 loadProblem :: RunOptions -> IO Problem

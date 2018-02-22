@@ -23,6 +23,7 @@ data NeuronLayer = NeuronLayer Activation (Matrix Double) (Matrix Double)
   deriving (Show, Eq)
 
 data ForwardPropStep = ForwardPropStep (Matrix Double) (Matrix Double)
+  deriving (Show, Eq)
 
 forwardPropA :: ForwardPropStep -> Matrix Double
 forwardPropA (ForwardPropStep a _) = a

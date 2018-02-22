@@ -82,8 +82,8 @@ runProblemStep p i nn accuracyCheck = (newNN, RunStep i cost accuracy)
     al = forwardPropA (last forwardSteps)
     y = exampleSetY trainSet
     grads = nnBackward nn forwardSteps trainSet
-    newNN = updateNNParams nn grads (problemLearningRate p)
     cost = computeCost al y
+    newNN = updateNNParams nn grads (problemLearningRate p)
     accuracy = calcAccuracy accuracyCheck al y
 
 calcAccuracy :: (Double -> Double -> Bool) -> Matrix Double -> Matrix Double -> Double
