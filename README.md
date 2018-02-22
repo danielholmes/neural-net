@@ -72,3 +72,11 @@ Cat image example (requires copying in some files to `/examples`):
 ```bash
 stack exec image-eg
 ```
+
+
+## Running with Time Profiling
+
+```bash
+stack build neural-net:exe:image-eg --pedantic --profile
+stack exec -- image-eg +RTS -p
+```

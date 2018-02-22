@@ -28,9 +28,8 @@ createExampleSet e
       exampleSizes = map (length . fst) e
       uniqueExampleSizes = nub exampleSizes
       numUniqueExampleSizes = length uniqueExampleSizes
-      m = length e
       n = head exampleSizes
-      x = matrix n m (\(r, c) -> (fst (e!!(c - 1)))!!(r - 1))
+      x = transpose (fromLists (map fst e))
       y = fromLists [map snd e]
 
 exampleSetX :: ExampleSet -> Matrix Double
