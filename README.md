@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/danielholmes/neural-net.svg?branch=master)](https://travis-ci.org/danielholmes/neural-net)
 
-A simple Neural Net implementation
+A simple binary classification Neural Net implementation
 
 
 ## Dependencies
@@ -67,10 +67,10 @@ Simple Logistic Regression example:
 stack exec logreg -- -c -l 0.005 -i 1000 examples/simple-csv/train.csv examples/simple-csv/test.csv
 ```
 
-Cat image example (requires copying in some files to `/examples`):
+Binary image classification example (requires copying in some files to `/examples`):
 
 ```bash
-stack exec image-eg
+stack exec image-eg -- -l 0.005 -i 1000 examples/images/nn-course/1 examples/images/nn-course/0
 ```
 
 
