@@ -67,10 +67,20 @@ Simple Logistic Regression example:
 stack exec logreg -- -c -l 0.005 -i 1000 examples/simple-csv/train.csv examples/simple-csv/test.csv
 ```
 
-Binary image classification example (requires copying in some files to `/examples`):
+Binary image classification Log Reg example (requires copying in some files to `/examples`):
 
 ```bash
 stack exec image-logreg -- -l 0.005 -i 1000 \
+  examples/images/nn-course-train/1 \
+  examples/images/nn-course-train/0 \
+  examples/images/nn-course-test/1 \
+  examples/images/nn-course-test/0
+```
+
+Binary image classification Deep NN example (requires copying in some files to `/examples`):
+
+```bash
+stack exec image-deep -- -l 0.0075 -i 2500 \
   examples/images/nn-course-train/1 \
   examples/images/nn-course-train/0 \
   examples/images/nn-course-test/1 \
@@ -81,6 +91,6 @@ stack exec image-logreg -- -l 0.005 -i 1000 \
 ## Running with Time Profiling
 
 ```bash
-stack build neural-net:exe:image-eg --pedantic --profile
+stack build neural-net:exe:image-logreg --pedantic --profile
 stack exec -- image-eg +RTS -p
 ```

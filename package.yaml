@@ -59,6 +59,16 @@ executables:
       - -main-is ImageLogRegMain
     dependencies:
       - neural-net
+  image-deep:
+    main:                ImageDeepMain.hs
+    source-dirs:         app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -main-is ImageDeepMain
+    dependencies:
+      - neural-net
 
 tests:
   neural-net-test:
