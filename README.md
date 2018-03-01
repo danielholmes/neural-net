@@ -70,7 +70,11 @@ stack exec logreg -- -c -l 0.005 -i 1000 examples/simple-csv/train.csv examples/
 Binary image classification example (requires copying in some files to `/examples`):
 
 ```bash
-stack exec image-eg -- -l 0.005 -i 1000 examples/images/nn-course/1 examples/images/nn-course/0
+stack exec image-logreg -- -l 0.005 -i 1000 \
+  examples/images/nn-course-train/1 \
+  examples/images/nn-course-train/0 \
+  examples/images/nn-course-test/1 \
+  examples/images/nn-course-test/0
 ```
 
 
