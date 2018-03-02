@@ -9,7 +9,7 @@ module NeuralNet.Example (
   splitExampleSet
 ) where
 
-import Data.Matrix
+import Numeric.LinearAlgebra
 import Data.List (nub)
 
 
@@ -29,7 +29,7 @@ createExampleSet e
       uniqueExampleSizes = nub exampleSizes
       numUniqueExampleSizes = length uniqueExampleSizes
       n = head exampleSizes
-      x = transpose (fromLists (map fst e))
+      x = tr (fromLists (map fst e))
       y = fromLists [map snd e]
 
 exampleSetX :: ExampleSet -> Matrix Double
@@ -39,7 +39,7 @@ exampleSetY :: ExampleSet -> Matrix Double
 exampleSetY (ExampleSet _ _ y) = y
 
 exampleSetN :: ExampleSet -> Int
-exampleSetN = nrows . exampleSetX
+exampleSetN = rows . exampleSetX
 
 exampleSetM :: ExampleSet -> Int
 exampleSetM (ExampleSet e _ _) = length e

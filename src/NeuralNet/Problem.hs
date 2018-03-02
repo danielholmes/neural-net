@@ -14,7 +14,7 @@ import NeuralNet.Net
 import NeuralNet.Layer
 import NeuralNet.Cost
 import NeuralNet.Train
-import Data.Matrix
+import Numeric.LinearAlgebra
 
 
 type NumIterations = Int
@@ -87,6 +87,7 @@ runProblemStep p i nn accuracyCheck = (newNN, RunStep i cost accuracy)
     accuracy = calcAccuracy accuracyCheck al y
 
 calcAccuracy :: (Double -> Double -> Bool) -> Matrix Double -> Matrix Double -> Double
-calcAccuracy accuracyCheck yHat y = fromIntegral numCorrect / fromIntegral (ncols y)
+calcAccuracy accuracyCheck yHat y = fromIntegral numCorrect / fromIntegral (cols y)
   where
-    numCorrect = length (filter (uncurry accuracyCheck) (zip (toList yHat) (toList y)))
+    numCorrect = length (filter (uncurry accuracyCheck) (zip (concat (toLists yHat)) (concat (toLists y))))
+    -- TODO: Search for concat (toLists  - should be an easier way

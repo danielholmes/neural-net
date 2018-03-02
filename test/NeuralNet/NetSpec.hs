@@ -1,7 +1,7 @@
 module NeuralNet.NetSpec (netSpec) where
 
 import Test.Hspec
-import Data.Matrix
+import Numeric.LinearAlgebra
 import NeuralNet.Net
 import NeuralNet.Activation
 import NeuralNet.Layer
@@ -10,17 +10,17 @@ import Control.Exception (evaluate)
 import Data.List
 
 matrixSize :: Matrix Double -> (Int, Int)
-matrixSize m = (nrows m, ncols m)
+matrixSize m = (rows m, cols m)
 
-allUnique :: (Eq a) => Matrix a -> Bool
+allUnique :: Matrix Double -> Bool
 allUnique m = length (nub list) == length list
-  where list = toList m
+  where list = concat (toLists m)
 
 createdLayer :: Activation -> (Int, Int) -> NeuronLayer -> Bool
 createdLayer a s l = activationEq && wSizeEq && bCorrect && allUnique m
   where
     m = layerW l
-    bCorrect = layerB l == fromList (fst s) 1 (replicate (fst s) 0)
+    bCorrect = layerB l == col (replicate (fst s) 0)
     activationEq = layerActivation l == a
     wSizeEq = matrixSize m == s
 
@@ -125,7 +125,7 @@ netSpec =
           nn = buildNNFromList (3, [LayerDefinition ReLU 1]) [1, 2, 3, 4]
           examples = createExampleSet [([1, 1, 2], 0)]
           resultAs = map forwardPropA (nnForwardSet nn examples)
-        in resultAs `shouldBe` [fromLists [[1], [1], [2]], matrix 1 1 (const 13.0)]
+        in resultAs `shouldBe` [fromLists [[1], [1], [2]], scalar 13.0]
 
       it "calculates correctly for multiple examples, multiple output" $
         let

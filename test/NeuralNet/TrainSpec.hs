@@ -1,7 +1,7 @@
 module NeuralNet.TrainSpec (trainSpec) where
 
 import Test.Hspec
-import Data.Matrix
+import Numeric.LinearAlgebra
 import NeuralNet.Net
 import NeuralNet.Activation
 import NeuralNet.Example

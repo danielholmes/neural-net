@@ -6,7 +6,7 @@ import NeuralNet.Activation
 import NeuralNet.Example
 import NeuralNet.Layer
 import Control.Exception (evaluate)
-import Data.Matrix
+import Numeric.LinearAlgebra
 
 
 layerSpec :: SpecWith ()

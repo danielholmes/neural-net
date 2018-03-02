@@ -23,7 +23,7 @@ optionsDef :: RunOptions
 optionsDef = RunOptions
   {trainPath = def &= typ "TRAINFILE" &= argPos 0
   ,testPath = def &= typ "TESTFILE" &= argPos 1
-  ,constInitWeights = def &= name "c" &= name "const-init-weights" &= help "Use 0 for initial weights"
+  ,constInitWeights = def &= name "c" &= name "const-init-weights" &= help "Use 0 for initial weights "
   ,numIterations = 1000 &= name "i" &= name "num-iterations" &= help "Number of training iterations"
   ,learningRate = 0.005 &= name "l" &= name "learning-rate" &= help "Learning rate (alpha)"} &=
   help "Simple Neural Net trainer" &=

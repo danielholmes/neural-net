@@ -1,24 +1,22 @@
 module NeuralNet.Matrix (
-  mapMatrix,
-  broadcastCols,
   sumRows,
   dims,
-  dimsEq
+  dimsEq,
+  zero
 ) where
 
-import Data.Matrix
+import Numeric.LinearAlgebra
 
-mapMatrix :: (a -> a) -> Matrix a -> Matrix a
-mapMatrix f m = foldr (mapRow (\_ x -> f x)) m [1..(nrows m)]
+zero :: Int -> Int -> Matrix Double
+zero r c = (r><c) (repeat 0)
 
-broadcastCols :: Matrix a -> Int -> Matrix a
-broadcastCols m n = fromLists (map (replicate n . head) (toLists m))
+-- TODO: Check if a function available for this
+sumRows :: Matrix Double -> Matrix Double
+sumRows m = col (map sum (toLists m))
 
-sumRows :: Num a => Matrix a -> Matrix a
-sumRows m = fromList (nrows m) 1 (map sum (toLists m))
-
+-- TODO: Have a look at size
 dims :: Matrix a -> (Int, Int)
-dims m = (nrows m, ncols m)
+dims m = (rows m, cols m)
 
 dimsEq :: Matrix a -> Matrix b -> Bool
 dimsEq x y = dims x == dims y

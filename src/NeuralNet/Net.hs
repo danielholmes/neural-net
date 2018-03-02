@@ -15,11 +15,11 @@ module NeuralNet.Net (
   createLogRegDefinition
 ) where
 
-import Data.Matrix
 import NeuralNet.Matrix
 import NeuralNet.Activation
 import NeuralNet.Layer
 import NeuralNet.Example
+import Numeric.LinearAlgebra
 
 type NumNeurons = Int
 type NumInputs = Int
@@ -48,8 +48,8 @@ initNeuronLayers weightsStream numInputs (LayerDefinition a numNeurons : ds) = (
   where
     numSeeds = numInputs * numNeurons
     (weights, ws) = splitAt numSeeds weightsStream
-    w = fromList numNeurons numInputs weights
-    b = fromList numNeurons 1 (replicate numNeurons 0)
+    w = (numNeurons >< numInputs) weights
+    b = col (replicate numNeurons 0)
     (ls, ws2) = initNeuronLayers ws numNeurons ds
 
 buildNNFromList :: NeuralNetDefinition -> [Double] -> NeuralNet
@@ -73,16 +73,16 @@ buildLayersFromList :: Int -> [LayerDefinition] -> [Double] -> [NeuronLayer]
 buildLayersFromList _ [] _ = []
 buildLayersFromList numInputs (LayerDefinition a numNeurons:ds) xs = layer : (buildLayersFromList numNeurons ds restXs)
   where
-    size = numInputs * numNeurons
-    (layerXs, afterLayerXs) = splitAt size xs
+    numWeights = numInputs * numNeurons
+    (layerXs, afterLayerXs) = splitAt numWeights xs
     (bs, restXs) = splitAt numNeurons afterLayerXs
-    layer = NeuronLayer a (fromList numNeurons numInputs layerXs) (fromList (length bs) 1 bs)
+    layer = NeuronLayer a ((numNeurons><numInputs) layerXs) (col bs)
 
 nnLayers :: NeuralNet -> [NeuronLayer]
 nnLayers (NeuralNet layers) = layers
 
 nnForward :: NeuralNet -> [Double] -> [Double]
-nnForward nn inputs = toList (forwardPropA (last setResult))
+nnForward nn inputs = concat (toLists (forwardPropA (last setResult)))
   where
     set = createExampleSet [(inputs, error "Undefined")]
     setResult = nnForwardSet nn set

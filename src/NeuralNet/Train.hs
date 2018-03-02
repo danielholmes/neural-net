@@ -8,7 +8,7 @@ import NeuralNet.Layer
 import NeuralNet.Example
 import NeuralNet.Activation
 import NeuralNet.Matrix
-import Data.Matrix
+import Numeric.LinearAlgebra
 
 
 nnBackward :: NeuralNet -> [ForwardPropStep] -> ExampleSet -> [(Matrix Double, Matrix Double)]
@@ -23,10 +23,10 @@ nnBackward nn steps examples
 
       y = exampleSetY examples
       al = forwardPropA (head orderedSteps)
-      unitRowVector = matrix 1 (ncols y) (const 1)
-      dAL1 = elementwise (/) y al
-      dAL2 = elementwise (/) (unitRowVector - y) (unitRowVector - al)
-      dAL = -(elementwise (-) dAL1 dAL2)
+      unitRowVector = row (replicate (cols y) 1)
+      dAL1 = y / al
+      dAL2 = (unitRowVector - y) / (unitRowVector - al)
+      dAL = -(dAL1 - dAL2)
 
 nnBackwardStep :: [NeuronLayer] -> [ForwardPropStep] -> Matrix Double -> [(Matrix Double, Matrix Double)]
 nnBackwardStep [] _ _ = []
@@ -39,12 +39,12 @@ nnBackwardStep (l:ls) (s:ss@(ps:_)) prevDA = (dW, db) : nnBackwardStep ls ss dA
 nnBackwardLayer :: NeuronLayer -> Matrix Double -> Matrix Double -> Matrix Double -> (Matrix Double, Matrix Double, Matrix Double)
 nnBackwardLayer l dA prevA z = (dANext, dW, db)
   where
-    m = fromIntegral (ncols prevA)
+    m = fromIntegral (cols prevA)
     dZ = backward (layerActivation l) dA z
     -- would these be quicker as an elementwise (/) (matrix r c (const m)) ? this last matrix could be cached
-    dW = scaleMatrix (1/m) (dZ * transpose prevA)
-    db = scaleMatrix (1/m) (sumRows dZ)
-    dANext = transpose (layerW l) * dZ
+    dW = scale (1/m) (dZ <> tr prevA)
+    db = scale (1/m) (sumRows dZ)
+    dANext = tr (layerW l) * dZ
 
 updateNNParams :: NeuralNet -> [(Matrix Double, Matrix Double)] -> Double -> NeuralNet
 updateNNParams nn grads learningRate
@@ -58,5 +58,5 @@ updateNNParams nn grads learningRate
 updateLayerParamsFromGrads :: NeuronLayer -> Matrix Double -> Matrix Double -> Double -> NeuronLayer
 updateLayerParamsFromGrads l dW db learningRate = updateLayerParams l newDw newDb
   where
-    newDw = elementwise (-) (layerW l) (scaleMatrix learningRate dW)
-    newDb = elementwise (-) (layerB l) (scaleMatrix learningRate db)
+    newDw = layerW l - scale learningRate dW
+    newDb = layerB l - scale learningRate db

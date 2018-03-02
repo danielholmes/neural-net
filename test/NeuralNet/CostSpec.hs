@@ -1,7 +1,7 @@
 module NeuralNet.CostSpec (costSpec) where
 
 import Test.Hspec
-import Data.Matrix
+import Numeric.LinearAlgebra
 import NeuralNet.Cost
 
 costSpec :: SpecWith ()

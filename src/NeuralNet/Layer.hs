@@ -16,8 +16,7 @@ module NeuralNet.Layer (
 
 import NeuralNet.Activation
 import NeuralNet.Matrix
-import Data.Matrix
-import qualified Data.Vector as Vector
+import Numeric.LinearAlgebra
 
 data NeuronLayer = NeuronLayer Activation (Matrix Double) (Matrix Double)
   deriving (Show, Eq)
@@ -32,17 +31,17 @@ forwardPropZ :: ForwardPropStep -> Matrix Double
 forwardPropZ (ForwardPropStep _ z) = z
 
 createInputForwardPropStep :: Matrix Double -> ForwardPropStep
-createInputForwardPropStep a = createForwardPropStep a (zero (nrows a) (ncols a))
+createInputForwardPropStep a = createForwardPropStep a (zero (rows a) (cols a))
 
 createForwardPropStep :: Matrix Double -> Matrix Double -> ForwardPropStep
 createForwardPropStep a z
-  | nrows a /= nrows z = error "a and z need same num rows"
-  | ncols a /= ncols z = error "a and z need same num cols"
+  | rows a /= rows z = error "a and z need same num rows"
+  | cols a /= cols z = error "a and z need same num cols"
   | otherwise          = ForwardPropStep a z
 
 layerForward :: NeuronLayer -> [Double] -> [Double]
-layerForward l inputs = Vector.toList (getCol 1 (forwardPropA (layerForwardSet l x)))
-  where x = colVector (Vector.fromList inputs)
+layerForward l inputs = concat (toLists (takeColumns 1 (forwardPropA (layerForwardSet l x))))
+  where x = col inputs
 
 layerForwardSet :: NeuronLayer -> Matrix Double -> ForwardPropStep
 layerForwardSet l x
@@ -50,19 +49,17 @@ layerForwardSet l x
   | otherwise      = createForwardPropStep a z
     where
       expInputs = layerNumInputs l
-      n = nrows x
-      m = ncols x
+      n = rows x
       w = layerW l
       b = layerB l
-      bBroadcasted = broadcastCols b m
-      z = w * x + bBroadcasted
+      z = w <> x + b
       a = forward (layerActivation l) z
 
 layerW :: NeuronLayer -> Matrix Double
 layerW (NeuronLayer _ w _) = w
 
 layerNumInputs :: NeuronLayer -> Int
-layerNumInputs = ncols . layerW
+layerNumInputs = cols . layerW
 
 layerB :: NeuronLayer -> Matrix Double
 layerB (NeuronLayer _ _ b) = b

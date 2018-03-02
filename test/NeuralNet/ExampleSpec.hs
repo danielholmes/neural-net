@@ -1,7 +1,7 @@
 module NeuralNet.ExampleSpec (exampleSpec) where
 
 import Test.Hspec
-import Data.Matrix
+import Numeric.LinearAlgebra
 import NeuralNet.Example
 import Control.Exception (evaluate)
 
