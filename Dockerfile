@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 RUN apt-get update
 RUN apt-get install -y software-properties-common
 RUN apt-get update
-RUN apt-get install -y curl libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev blas-dev lapack-dev
+RUN apt-get install -y curl libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libblas-dev liblapack-dev
 RUN curl -sSL https://get.haskellstack.org/ | sh
 RUN mkdir -p ~/.local/bin
 RUN export PATH=$HOME/.local/bin:$PATH
