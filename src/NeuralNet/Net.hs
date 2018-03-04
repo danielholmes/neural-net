@@ -48,7 +48,8 @@ initNeuronLayers weightsStream numInputs (LayerDefinition a numNeurons : ds) = (
   where
     numSeeds = numInputs * numNeurons
     (weights, ws) = splitAt numSeeds weightsStream
-    w = (numNeurons >< numInputs) weights
+    w = scale (sqrt (2.0 / fromIntegral numInputs)) ((numNeurons >< numInputs) weights)
+    -- * sqrt (2 / numInputs) should be parameterisable
     b = col (replicate numNeurons 0)
     (ls, ws2) = initNeuronLayers ws numNeurons ds
 

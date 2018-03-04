@@ -16,7 +16,7 @@ data RunOptions = RunOptions {trainYesDir :: FilePath
                              ,trainNoDir :: FilePath
                              ,testYesDir :: FilePath
                              ,testNoDir :: FilePath
-                             ,constInitWeights :: Bool
+                             ,weightsSeed :: Maybe String
                              ,numIterations :: Int
                              ,learningRate :: Double}
   deriving (Eq, Show, Data, Typeable)
@@ -27,7 +27,7 @@ optionsDef = RunOptions
   ,trainNoDir = def &= typ "TRAINNODIR" &= argPos 1
   ,testYesDir = def &= typ "TESTYESDIR" &= argPos 2
   ,testNoDir = def &= typ "TESTNODIR" &= argPos 3
-  ,constInitWeights = def &= name "c" &= name "const-init-weights" &= help "Use 0 for initial weights"
+  ,weightsSeed = Nothing &= name "w" &=name "weights-seed" &= help "A filepath to a CSV of weights, or an Int to seed random weights"
   ,numIterations = 250 &= name "i" &= name "num-iterations" &= help "Number of training iterations"
   ,learningRate = 0.005 &= name "l" &= name "learning-rate" &= help "Learning rate (alpha)"} &=
   help "Simple Neural Net trainer" &=
@@ -37,9 +37,15 @@ main :: IO ()
 main = do
   options <- cmdArgs optionsDef
   problem <- loadProblem options
-  --weights <- createStdGenWeightsStream
-  let weights = repeat 0
+  weights <- createWeightsStream options
   uiRunProblem problem weights
+
+createWeightsStream :: RunOptions -> IO [Double]
+createWeightsStream (RunOptions { weightsSeed = maybeSeed }) = case maybeSeed of
+  Nothing -> createStdGenWeightsStream
+  Just seed -> createCsvWeightsStream seed -- TODO: Configure no weights scaling in initNN
+  -- Just seed -> createSeededGenWeightsStream seed
+  -- TODO: If file exists, use as file. If an int, use as int. Else throw error
 
 loadProblem :: RunOptions -> IO Problem
 loadProblem options = do

@@ -16,7 +16,6 @@ data RunOptions = RunOptions {trainYesDir :: FilePath
                              ,trainNoDir :: FilePath
                              ,testYesDir :: FilePath
                              ,testNoDir :: FilePath
-                             ,constInitWeights :: Bool
                              ,numIterations :: Int
                              ,learningRate :: Double}
   deriving (Eq, Show, Data, Typeable)
@@ -27,7 +26,6 @@ optionsDef = RunOptions
   ,trainNoDir = def &= typ "TRAINNODIR" &= argPos 1
   ,testYesDir = def &= typ "TESTYESDIR" &= argPos 2
   ,testNoDir = def &= typ "TESTNODIR" &= argPos 3
-  ,constInitWeights = def &= name "c" &= name "const-init-weights" &= help "Use 0 for initial weights"
   ,numIterations = 250 &= name "i" &= name "num-iterations" &= help "Number of training iterations"
   ,learningRate = 0.005 &= name "l" &= name "learning-rate" &= help "Learning rate (alpha)"} &=
   help "Simple Neural Net trainer" &=
@@ -37,7 +35,6 @@ main :: IO ()
 main = do
   options <- cmdArgs optionsDef
   problem <- loadProblem options
-  --weights <- createStdGenWeightsStream
   let weights = repeat 0
   uiRunProblem problem weights
 

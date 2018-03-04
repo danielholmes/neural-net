@@ -1,6 +1,8 @@
 module NeuralNet.External (
   loadExampleSet,
   createStdGenWeightsStream,
+  createSeededGenWeightsStream,
+  createCsvWeightsStream,
   loadImageSet
 ) where
 
@@ -25,9 +27,14 @@ loadExampleSet p =
 
 loadCsvExampleSet :: FilePath -> IO ExampleSet
 loadCsvExampleSet p = do
+  c <- readCsvFile p
+  return (createExampleSet (csvToExamples c))
+
+readCsvFile :: FilePath -> IO CSV
+readCsvFile p = do
   result <- parseCSVFromFile p
   case result of
-    Right c -> return (createExampleSet (csvToExamples c))
+    Right c -> return c
     _       -> error ("Error reading" ++ p)
 
 csvToExamples :: CSV -> [Example]
@@ -37,7 +44,15 @@ csvToExamples records = map (\r -> (init r, last r)) doubleRecords
 createStdGenWeightsStream :: IO WeightsStream
 createStdGenWeightsStream = do
   stdGen <- getStdGen
-  return (randomRs (0, 0.1) stdGen)
+  return (randomRs (-0.999999999, 0.999999999) stdGen)
+
+createSeededGenWeightsStream :: Int -> IO WeightsStream
+createSeededGenWeightsStream _ = createStdGenWeightsStream
+
+createCsvWeightsStream :: FilePath -> IO WeightsStream
+createCsvWeightsStream p = do
+  c <- readCsvFile p
+  return (map read (head c))
 
 loadImageSet :: FilePath -> FilePath -> IO ExampleSet
 loadImageSet yesDir noDir = do

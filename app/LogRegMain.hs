@@ -14,7 +14,6 @@ import System.Console.CmdArgs
 
 data RunOptions = RunOptions {trainPath :: FilePath
                              ,testPath :: FilePath
-                             ,constInitWeights :: Bool
                              ,numIterations :: Int
                              ,learningRate :: Double}
   deriving (Eq, Show, Data, Typeable)
@@ -23,7 +22,6 @@ optionsDef :: RunOptions
 optionsDef = RunOptions
   {trainPath = def &= typ "TRAINFILE" &= argPos 0
   ,testPath = def &= typ "TESTFILE" &= argPos 1
-  ,constInitWeights = def &= name "c" &= name "const-init-weights" &= help "Use 0 for initial weights "
   ,numIterations = 1000 &= name "i" &= name "num-iterations" &= help "Number of training iterations"
   ,learningRate = 0.005 &= name "l" &= name "learning-rate" &= help "Learning rate (alpha)"} &=
   help "Simple Neural Net trainer" &=
@@ -33,14 +31,8 @@ main :: IO ()
 main = do
   options <- cmdArgs optionsDef
   problem <- loadProblem options
-  weights <- createWeightsStream options
+  let weights = repeat 0
   uiRunProblem problem weights
-
-createWeightsStream :: RunOptions -> IO WeightsStream
-createWeightsStream options = if constInitWeights options
-  then return (repeat 0)
-  else createStdGenWeightsStream
-  --return (randomRs (0, 0.1) (read "1 0" :: StdGen)) TODO: Allow passing an optional seed for weights generator
 
 loadProblem :: RunOptions -> IO Problem
 loadProblem (RunOptions {trainPath = train, testPath = test, numIterations = n, learningRate = a}) = do
